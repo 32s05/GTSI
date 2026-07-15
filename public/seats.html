@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose Your Seat — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<header class="page-hero" style="padding-bottom:24px;">
+  <div class="container">
+    <a href="booking.html" class="back-link">&larr; Back to results</a>
+    <h1 class="mt-8" id="trip-title">Choose your seat</h1>
+    <p id="trip-subtitle"></p>
+  </div>
+</header>
+
+<section class="section" style="padding-top:36px;">
+  <div class="container seat-layout">
+    <div class="panel seat-map-panel">
+      <div class="flex-between mb-24">
+        <div class="flex gap-16" style="align-items:center;">
+          <span class="legend"><span class="dot available"></span> Available</span>
+          <span class="legend"><span class="dot selected"></span> Selected</span>
+          <span class="legend"><span class="dot booked"></span> Booked</span>
+        </div>
+        <span class="badge badge-gold" id="bus-type-badge"></span>
+      </div>
+
+      <div class="bus-frame">
+        <div class="bus-driver">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0" stroke="#0B1E3D" stroke-width="1.5"/></svg>
+        </div>
+        <div id="seat-grid" class="seat-grid"></div>
+      </div>
+    </div>
+
+    <aside class="panel seat-summary-panel">
+      <h3>Trip summary</h3>
+      <div id="summary-route" class="route-line mb-16"></div>
+      <div class="summary-row"><span>Date</span><strong id="summary-date"></strong></div>
+      <div class="summary-row"><span>Departure</span><strong id="summary-departure"></strong></div>
+      <div class="summary-row"><span>Bus type</span><strong id="summary-bustype"></strong></div>
+      <hr class="divider" />
+      <h4>Selected seats</h4>
+      <div id="selected-seats-list" class="selected-seats-list"></div>
+      <hr class="divider" />
+      <div class="summary-row"><span>Price per seat</span><strong id="summary-price"></strong></div>
+      <div class="summary-row total"><span>Total</span><strong id="summary-total">₱0</strong></div>
+      <button class="btn btn-primary btn-block mt-16" id="continue-btn" disabled>Select seats to continue</button>
+    </aside>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/seats.js"></script>
+</body>
+</html>

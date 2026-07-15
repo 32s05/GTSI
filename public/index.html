@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Genesis Transport — Book Intercity Bus Trips</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">P2P Bus Booking</span>
+      <h1>Book your seat before<br>the terminal gets busy.</h1>
+      <p class="hero-sub">Genesis Transport connects commuters directly with trusted intercity buses across Cavite and Luzon — real-time seats, upfront pricing, no queueing.</p>
+
+      <form id="hero-search" class="hero-search">
+        <div class="hero-field">
+          <label for="hero-from">From</label>
+          <select id="hero-from" required></select>
+        </div>
+        <div class="hero-swap" id="hero-swap" title="Swap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 7h13l-4-4M17 17H4l4 4" stroke="#0B1E3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="hero-field">
+          <label for="hero-to">To</label>
+          <select id="hero-to" required></select>
+        </div>
+        <div class="hero-field">
+          <label for="hero-date">Departure</label>
+          <input type="date" id="hero-date" required />
+        </div>
+        <button class="btn btn-primary" type="submit">Search buses</button>
+      </form>
+
+      <div class="hero-trust">
+        <div><strong>40+</strong><span>daily departures</span></div>
+        <div><strong>8</strong><span>Luzon routes</span></div>
+        <div><strong>4.8★</strong><span>average rating</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="route-card floating">
+        <div class="flex-between mb-16">
+          <span class="badge badge-gold">Deluxe</span>
+          <span class="muted" style="font-size:0.8rem;">Today, 07:00</span>
+        </div>
+        <div class="route-line mb-8">
+          <span class="stop"></span>
+          <span class="track"><span class="bus-dot"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a2 2 0 012-2h12a2 2 0 012 2v9" stroke="#D4AF37" stroke-width="2"/></svg></span></span>
+          <span class="stop end"></span>
+        </div>
+        <div class="flex-between">
+          <div>
+            <strong>Dasmariñas</strong>
+            <p class="muted" style="margin:0;font-size:0.8rem;">Cavite</p>
+          </div>
+          <div style="text-align:right;">
+            <strong>Alabang</strong>
+            <p class="muted" style="margin:0;font-size:0.8rem;">Muntinlupa</p>
+          </div>
+        </div>
+        <div class="route-card-footer">
+          <span>55 min</span>
+          <strong>₱120</strong>
+        </div>
+      </div>
+      <div class="ticket-chip">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M20.5 12a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0z" stroke="#2F9E64" stroke-width="1.6"/></svg>
+        Seat 4B confirmed
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= LOGOS / TRUST ================= -->
+<section class="section" style="padding-top:40px;padding-bottom:40px;">
+  <div class="container">
+    <p class="text-center muted" style="font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;">Trusted by commuters travelling to</p>
+    <div class="marquee" id="terminal-marquee"></div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Why Genesis</span>
+      <h2>Everything a terminal counter does — from your phone.</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="card feature-card">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 17V9a2 2 0 012-2h12a2 2 0 012 2v8M4 17a2 2 0 002 2h1a2 2 0 002-2M4 17h16M20 17a2 2 0 01-2 2h-1a2 2 0 01-2-2" stroke="#0B1E3D" stroke-width="1.5"/></svg></div>
+        <h3>Live seat maps</h3>
+        <p>See exactly which seats are open before you commit — no more guessing at the terminal window.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4M2 12a10 10 0 1020 0 10 10 0 00-20 0z" stroke="#0B1E3D" stroke-width="1.5"/></svg></div>
+        <h3>QR ticket, no printing</h3>
+        <p>Your confirmed booking becomes a scannable ticket instantly — flash it at boarding.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#0B1E3D" stroke-width="1.5"/></svg></div>
+        <h3>Upfront pricing</h3>
+        <p>Fare, terminal fee, and trip duration shown before checkout — every time, every route.</p>
+      </div>
+      <div class="card feature-card">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 4v16M4 4l16 4-16 4" stroke="#0B1E3D" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+        <h3>Trip history & stats</h3>
+        <p>Track distance travelled, favorite routes, and rebook your regular commute in two taps.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROUTES ================= -->
+<section class="section" id="routes" style="background:var(--surface-alt);">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Popular Routes</span>
+      <h2>Where commuters are heading this week</h2>
+    </div>
+    <div class="routes-grid" id="routes-grid">
+      <!-- populated by landing.js -->
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>Three steps from search to boarding</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <span class="step-num">1</span>
+        <h3>Search your route</h3>
+        <p>Pick your terminal, destination, and travel date to see all available departures.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <h3>Choose your seat</h3>
+        <p>Tap a seat on the live map, review the fare breakdown, and confirm passenger details.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <h3>Board with your QR ticket</h3>
+        <p>Show your ticket at the terminal gate — your seat's already reserved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="section" id="faq" style="background:var(--surface-alt);">
+  <div class="container" style="max-width:760px;">
+    <div class="section-head">
+      <span class="eyebrow">FAQ</span>
+      <h2>Good to know</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>Can I cancel a booking after confirming?</summary>
+        <p>Yes — go to My Trips and cancel any upcoming booking. Refund handling depends on the operator's policy.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do I need to print my ticket?</summary>
+        <p>No. Your QR ticket appears in My Trips right after checkout and works straight from your phone screen.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Which payment methods are supported?</summary>
+        <p>This prototype supports GCash, card, and pay-at-terminal as mock payment options for demonstration.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="section cta-band">
+  <div class="container text-center">
+    <h2 style="color:#fff;">Ready for your next trip?</h2>
+    <p style="color:#aeb9d4;max-width:480px;margin:0 auto 28px;">Search live departures and reserve your seat in under a minute.</p>
+    <a href="booking.html" class="btn btn-primary">Book a trip now</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/landing.js"></script>
+</body>
+</html>

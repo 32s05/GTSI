@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Log in — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<section class="auth-section">
+  <div class="container auth-wrap">
+    <div class="auth-side">
+      <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">Welcome back</span>
+      <h1 style="color:#fff;">Pick up right where<br>you left your seat.</h1>
+      <p style="color:#aeb9d4;">Log in to view upcoming trips, rebook favorite routes, and pull up your QR ticket at the terminal.</p>
+      <div class="route-line" style="max-width:220px;margin-top:32px;">
+        <span class="stop"></span>
+        <span class="track"><span class="bus-dot"><svg viewBox="0 0 24 24" fill="none"><path d="M4 16V7a2 2 0 012-2h12a2 2 0 012 2v9" stroke="#D4AF37" stroke-width="2"/></svg></span></span>
+        <span class="stop end"></span>
+      </div>
+    </div>
+
+    <div class="panel auth-panel">
+      <h2>Log in</h2>
+      <p class="muted mb-24">New to Genesis Transport? <a href="signup.html" style="color:var(--gold-600);font-weight:600;">Create an account</a></p>
+
+      <div class="form-note">Demo account — <strong>demo@genesistransport.ph</strong> / <strong>demo1234</strong></div>
+
+      <form id="login-form" novalidate>
+        <div class="field" id="field-email">
+          <label for="email">Email address</label>
+          <input type="email" id="email" required placeholder="you@email.com" />
+          <p class="field-error">Enter a valid email address.</p>
+        </div>
+        <div class="field" id="field-password">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="••••••••" />
+          <p class="field-error">Password is required.</p>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" id="login-submit">Log in</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

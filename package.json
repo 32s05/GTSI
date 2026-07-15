@@ -1,0 +1,12 @@
+{
+  "name": "genesis-transport-web-prototype",
+  "version": "1.0.0",
+  "description": "Genesis Transport Service, Inc. — HTML/CSS/JS + Node.js web prototype (P2P bus booking)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

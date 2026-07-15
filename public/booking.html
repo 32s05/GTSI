@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Book a Trip — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<header class="page-hero">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">Book a trip</span>
+    <h1 class="mt-8">Find your next departure</h1>
+    <p>Compare schedules, bus types, and live seat availability.</p>
+
+    <form id="search-form" class="search-bar">
+      <div class="hero-field">
+        <label for="from">From</label>
+        <select id="from" required></select>
+      </div>
+      <div class="hero-swap" id="swap" title="Swap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 7h13l-4-4M17 17H4l4 4" stroke="#0B1E3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="hero-field">
+        <label for="to">To</label>
+        <select id="to" required></select>
+      </div>
+      <div class="hero-field">
+        <label for="date">Departure</label>
+        <input type="date" id="date" required />
+      </div>
+      <div class="hero-field" style="max-width:130px;">
+        <label for="passengers">Passengers</label>
+        <select id="passengers">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+  </div>
+</header>
+
+<section class="section" style="padding-top:40px;">
+  <div class="container results-layout">
+    <aside class="filters-panel card">
+      <h3 style="font-size:1rem;">Filter by bus type</h3>
+      <div id="filter-types" class="filter-types"></div>
+      <h3 style="font-size:1rem;margin-top:22px;">Sort by</h3>
+      <select id="sort-select" class="sort-select">
+        <option value="departure">Earliest departure</option>
+        <option value="price-asc">Lowest price</option>
+        <option value="price-desc">Highest price</option>
+        <option value="seats">Most seats available</option>
+      </select>
+    </aside>
+
+    <div class="results-list">
+      <div id="results-summary" class="results-summary"></div>
+      <div id="results-container"></div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/booking.js"></script>
+</body>
+</html>

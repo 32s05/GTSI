@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Trips — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<header class="page-hero" style="padding-bottom:34px;">
+  <div class="container">
+    <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">My Trips</span>
+    <h1 class="mt-8" id="welcome-heading">Welcome back</h1>
+    <p>Manage upcoming bookings, revisit past trips, and track your travel.</p>
+  </div>
+</header>
+
+<section class="section" style="padding-top:32px;">
+  <div class="container">
+
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-tab="upcoming">Upcoming</button>
+      <button class="dash-tab" data-tab="past">Past trips</button>
+      <button class="dash-tab" data-tab="favorites">Favorite routes</button>
+    </div>
+
+    <div id="tab-upcoming" class="tab-panel">
+      <div id="upcoming-list"></div>
+    </div>
+
+    <div id="tab-past" class="tab-panel hide">
+      <div id="past-list"></div>
+    </div>
+
+    <div id="tab-favorites" class="tab-panel hide">
+      <div id="favorites-list" class="routes-grid"></div>
+    </div>
+
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<!-- Cancel confirmation dialog -->
+<div id="cancel-modal" class="modal-overlay hide">
+  <div class="modal-card">
+    <h3>Cancel this booking?</h3>
+    <p class="muted">This will release your seat and can't be undone in this prototype.</p>
+    <div class="flex gap-12 mt-24">
+      <button class="btn btn-ghost btn-block" id="cancel-dismiss">Keep booking</button>
+      <button class="btn btn-danger-ghost btn-block" id="cancel-confirm">Cancel booking</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

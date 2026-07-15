@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign up — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<section class="auth-section">
+  <div class="container auth-wrap">
+    <div class="auth-side">
+      <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">Join Genesis</span>
+      <h1 style="color:#fff;">Your seat, saved<br>before you arrive.</h1>
+      <p style="color:#aeb9d4;">Create an account to book trips, save favorite routes, and keep every ticket in one place.</p>
+      <ul style="margin-top:28px;display:flex;flex-direction:column;gap:14px;">
+        <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Free to book, pay only for your trip</li>
+        <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Cancel anytime before departure</li>
+        <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Track distance travelled over time</li>
+      </ul>
+    </div>
+
+    <div class="panel auth-panel">
+      <h2>Create your account</h2>
+      <p class="muted mb-24">Already booking with us? <a href="login.html" style="color:var(--gold-600);font-weight:600;">Log in</a></p>
+
+      <form id="signup-form" novalidate>
+        <div class="field" id="field-name">
+          <label for="name">Full name</label>
+          <input type="text" id="name" required placeholder="Juan Dela Cruz" />
+          <p class="field-error">Enter your full name.</p>
+        </div>
+        <div class="field" id="field-email">
+          <label for="email">Email address</label>
+          <input type="email" id="email" required placeholder="you@email.com" />
+          <p class="field-error">Enter a valid email address.</p>
+        </div>
+        <div class="field" id="field-password">
+          <label for="password">Password</label>
+          <input type="password" id="password" required minlength="6" placeholder="At least 6 characters" />
+          <p class="field-error">Password must be at least 6 characters.</p>
+        </div>
+        <div class="field" id="field-confirm">
+          <label for="confirm">Confirm password</label>
+          <input type="password" id="confirm" required placeholder="Re-enter password" />
+          <p class="field-error">Passwords don't match.</p>
+        </div>
+        <label class="checkbox-row mb-16">
+          <input type="checkbox" id="terms" required />
+          <span>I agree to the Terms of Service and Privacy Policy.</span>
+        </label>
+        <button class="btn btn-primary btn-block" type="submit" id="signup-submit">Create account</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

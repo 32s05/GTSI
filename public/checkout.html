@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout — Genesis Transport</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div id="site-nav"></div>
+
+<header class="page-hero" style="padding-bottom:24px;">
+  <div class="container">
+    <a href="seats.html" class="back-link" id="back-link">&larr; Back to seat selection</a>
+    <h1 class="mt-8" id="checkout-title">Passenger details</h1>
+    <p id="checkout-subtitle"></p>
+  </div>
+</header>
+
+<!-- ============ STEP: FORM ============ -->
+<section class="section" id="checkout-step" style="padding-top:36px;">
+  <div class="container checkout-layout">
+    <div class="panel">
+      <h3>Who's travelling?</h3>
+      <p class="muted mb-16">Enter details for each seat. Names print on the QR ticket.</p>
+      <form id="passenger-form"></form>
+
+      <h3 class="mt-32">Payment method</h3>
+      <div id="payment-options" class="payment-options"></div>
+
+      <label class="checkbox-row mt-24">
+        <input type="checkbox" id="agree-terms" required />
+        <span>I confirm passenger details are correct and agree to the fare rules.</span>
+      </label>
+
+      <button class="btn btn-primary btn-block mt-24" id="confirm-btn">Confirm and pay</button>
+    </div>
+
+    <aside class="panel seat-summary-panel">
+      <h3>Order summary</h3>
+      <div id="order-route" class="route-line mb-16"></div>
+      <div class="summary-row"><span>Date</span><strong id="order-date"></strong></div>
+      <div class="summary-row"><span>Departure</span><strong id="order-departure"></strong></div>
+      <div class="summary-row"><span>Bus type</span><strong id="order-bustype"></strong></div>
+      <div class="summary-row"><span>Seats</span><strong id="order-seats"></strong></div>
+      <hr class="divider" />
+      <div class="summary-row"><span id="order-price-label">Price per seat</span><strong id="order-price"></strong></div>
+      <div class="summary-row"><span>Terminal fee</span><strong>₱20</strong></div>
+      <div class="summary-row total"><span>Total</span><strong id="order-total">₱0</strong></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ STEP: CONFIRMATION ============ -->
+<section class="section hide" id="confirmation-step" style="padding-top:50px;">
+  <div class="container" style="max-width:520px;">
+    <div class="panel ticket-panel text-center">
+      <div class="ticket-check">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2>Booking confirmed!</h2>
+      <p class="muted">Show this QR ticket at the terminal gate before boarding.</p>
+
+      <div class="ticket-card">
+        <div class="ticket-route" id="ticket-route"></div>
+        <div class="ticket-qr">
+          <img id="ticket-qr-img" alt="Booking QR code" width="150" height="150" />
+        </div>
+        <div class="ticket-id" id="ticket-id"></div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-details" id="ticket-details"></div>
+      </div>
+
+      <div class="flex gap-12 mt-24" style="justify-content:center;">
+        <a href="dashboard.html" class="btn btn-primary">Go to My Trips</a>
+        <a href="booking.html" class="btn btn-ghost">Book another trip</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>
