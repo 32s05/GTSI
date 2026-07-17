@@ -54,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paymentOptions = [
     { id: "gcash", label: "GCash", sub: "Pay instantly via e-wallet" },
     { id: "card", label: "Credit / Debit card", sub: "Visa, Mastercard" },
-    { id: "cash", label: "Pay at terminal", sub: "Cash, reserve now, pay on boarding" },
   ];
   document.getElementById("payment-options").innerHTML = paymentOptions
     .map(
