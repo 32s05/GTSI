@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const draft = GT.getDraft();
   if (!draft || !draft.trip) {
     GT.toast("Please search and select a trip first.", "error");
-    setTimeout(() => (location.href = "booking.html"), 900);
+    setTimeout(() => (location.href = "booking.ejs"), 900);
     return;
   }
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   continueBtn.addEventListener("click", () => {
     if (selectedSeats.length !== passengers) return;
     GT.setDraft({ ...draft, seats: selectedSeats });
-    location.href = "checkout.html";
+    location.href = "checkout.ejs";
   });
 
   updateSummary();

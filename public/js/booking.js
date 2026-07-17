@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           date: dateInput.value,
           passengers,
         });
-        location.href = "seats.html";
+        location.href = "seats.ejs";
       });
     });
   }

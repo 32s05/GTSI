@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // If already logged in, bounce to dashboard
   if (GT.getUser() && (document.getElementById("login-form") || document.getElementById("signup-form"))) {
-    location.href = "dashboard.html";
+    location.href = "dashboard.ejs";
     return;
   }
 
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         GT.setUser(user);
         GT.toast(`Welcome back, ${user.name.split(" ")[0]}!`, "success");
-        const redirect = sessionStorage.getItem("gt_redirect_after_login") || "dashboard.html";
+        const redirect = sessionStorage.getItem("gt_redirect_after_login") || "dashboard.ejs";
         sessionStorage.removeItem("gt_redirect_after_login");
         setTimeout(() => (location.href = redirect), 500);
       } catch (err) {
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         GT.setUser(user);
         GT.toast(`Account created — welcome, ${user.name.split(" ")[0]}!`, "success");
-        setTimeout(() => (location.href = "dashboard.html"), 500);
+        setTimeout(() => (location.href = "dashboard.ejs"), 500);
       } catch (err) {
         GT.toast(err.message, "error");
         setLoading(btn, false, "Create account");

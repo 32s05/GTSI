@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         </div>
         <div class="route-tile-footer">
           <span>${GT.formatDurationMins(r.durationMins)}</span>
-          <a href="booking.html?from=${r.originCode}&to=${r.destCode}" style="color:var(--gold-600);font-weight:600;">Book →</a>
+          <a href="booking.ejs?from=${r.originCode}&to=${r.destCode}" style="color:var(--gold-600);font-weight:600;">Book →</a>
         </div>
       </div>`;
       })

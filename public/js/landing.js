@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .slice(0, 6)
       .map(
         (r) => `
-      <a class="route-tile" href="booking.html?from=${r.originCode}&to=${r.destCode}">
+      <a class="route-tile" href="booking.ejs?from=${r.originCode}&to=${r.destCode}">
         <span class="badge badge-navy">${r.origin.region}</span>
         <div class="route-line">
           <span class="stop"></span>
@@ -70,6 +70,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       to: toSelect.value,
       date: dateInput.value,
     });
-    location.href = `booking.html?${params.toString()}`;
+    location.href = `booking.ejs?${params.toString()}`;
   });
 });

@@ -93,7 +93,7 @@ const GT = (() => {
     el._timer = setTimeout(() => el.classList.remove("show"), 3200);
   }
 
-  function requireAuth(redirectTo = "login.html") {
+  function requireAuth(redirectTo = "login.ejs") {
     const user = getUser();
     if (!user) {
       sessionStorage.setItem("gt_redirect_after_login", location.pathname.split("/").pop());
@@ -103,22 +103,15 @@ const GT = (() => {
     return user;
   }
 
-  const busMarkSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 16V7a2 2 0 012-2h12a2 2 0 012 2v9" stroke="#D4AF37" stroke-width="1.6" stroke-linecap="round"/>
-    <rect x="4" y="10" width="16" height="6" rx="1" stroke="#D4AF37" stroke-width="1.6"/>
-    <circle cx="8" cy="18" r="1.6" fill="#D4AF37"/>
-    <circle cx="16" cy="18" r="1.6" fill="#D4AF37"/>
-  </svg>`;
-
   function renderNav(activePage) {
     const mount = document.getElementById("site-nav");
     if (!mount) return;
     const user = getUser();
 
     const links = [
-      { href: "index.html", label: "Home", key: "home" },
-      { href: "booking.html", label: "Book a Trip", key: "booking" },
-      { href: "dashboard.html", label: "My Trips", key: "dashboard" },
+      { href: "index.ejs", label: "Home", key: "home" },
+      { href: "booking.ejs", label: "Book a Trip", key: "booking" },
+      { href: "dashboard.ejs", label: "My Trips", key: "dashboard" },
     ];
 
     const linksHtml = links
@@ -134,14 +127,16 @@ const GT = (() => {
            <span>${user.name.split(" ")[0]}</span>
          </div>
          <button class="btn btn-ghost btn-sm" id="nav-logout">Log out</button>`
-      : `<a href="login.html" class="btn btn-ghost btn-sm">Log in</a>
-         <a href="signup.html" class="btn btn-primary btn-sm">Sign up</a>`;
+      : `<a href="login.ejs" class="btn btn-ghost btn-sm">Log in</a>
+         <a href="signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
 
     mount.innerHTML = `
       <nav class="navbar">
         <div class="container">
-          <a href="index.html" class="brand">
-            <span class="brand-mark">${busMarkSvg}</span>
+          <a href="index.ejs" class="brand">
+            <span class="brand-mark">
+              <img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" />
+            </span>
             Genesis Transport
           </a>
           <div class="nav-links">${linksHtml}</div>
@@ -165,7 +160,7 @@ const GT = (() => {
     document.getElementById("nav-logout")?.addEventListener("click", () => {
       clearUser();
       toast("Logged out.");
-      setTimeout(() => (location.href = "index.html"), 500);
+      setTimeout(() => (location.href = "index.ejs"), 500);
     });
   }
 
@@ -177,26 +172,28 @@ const GT = (() => {
         <div class="container">
           <div style="max-width:280px;">
             <div class="brand" style="color:#fff;margin-bottom:12px;">
-              <span class="brand-mark">${busMarkSvg}</span>
+              <span class="brand-mark">
+                <img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" />
+              </span>
               Genesis Transport
             </div>
             <p style="color:#8b96b5;">Peer-to-peer intercity bus booking for the Filipino commuter — built as a DLSU-D capstone project.</p>
           </div>
           <div>
             <h4>Product</h4>
-            <a href="booking.html">Book a trip</a>
-            <a href="dashboard.html">My trips</a>
-            <a href="index.html#routes">Routes</a>
+            <a href="booking.ejs">Book a trip</a>
+            <a href="dashboard.ejs">My trips</a>
+            <a href="index.ejs#routes">Routes</a>
           </div>
           <div>
             <h4>Company</h4>
-            <a href="index.html#about">About</a>
-            <a href="index.html#faq">FAQ</a>
+            <a href="index.ejs#about">About</a>
+            <a href="index.ejs#faq">FAQ</a>
           </div>
           <div>
             <h4>Account</h4>
-            <a href="login.html">Log in</a>
-            <a href="signup.html">Sign up</a>
+            <a href="login.ejs">Log in</a>
+            <a href="signup.ejs">Sign up</a>
           </div>
         </div>
         <div class="footer-bottom">© ${new Date().getFullYear()} Genesis Transport Service, Inc. — Prototype build for academic use.</div>

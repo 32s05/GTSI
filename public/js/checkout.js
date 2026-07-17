@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const draft = GT.getDraft();
   if (!draft || !draft.seats || !draft.seats.length) {
     GT.toast("Please choose your seats first.", "error");
-    setTimeout(() => (location.href = "booking.html"), 900);
+    setTimeout(() => (location.href = "booking.ejs"), 900);
     return;
   }
 
