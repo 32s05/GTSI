@@ -937,11 +937,18 @@ button { font-family: inherit; }
   grid-template-columns: 1fr auto;
   gap: 16px;
   align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
 }
 .booking-card .route-line { margin: 10px 0; max-width: 260px; }
 .booking-card-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
 .booking-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 .booking-card-actions .price { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--navy-950); }
+
+.booking-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
 
 .modal-overlay {
   position: fixed; inset: 0;

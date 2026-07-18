@@ -170,6 +170,6 @@ app.use((req, res) => res.status(404).render('404'));
 
 // Launch application lifecycle listener execution
 app.listen(PORT, () => {
-    console.log(`🚀 Genesis Transport Server actively listening at http://localhost:${PORT}`);
+    console.log(`🚀 Genesis Transport Server actively running at http://localhost:${PORT}`);
     console.log(`💡 Demo Account Login Credential: email: "demo@genesistransport.ph" | password: "demo1234"`);
 });

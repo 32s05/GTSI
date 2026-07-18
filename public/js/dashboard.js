@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         : `<span class="badge" style="background:var(--surface-alt);color:var(--muted);">Completed</span>`;
 
     return `
-    <div class="booking-card">
+    <div class="booking-card" style="cursor: pointer;" onclick="openTicketModal('${b.id}')">
       <div>
         <div class="flex-between" style="max-width:400px;">
           <strong>${route ? route.origin.name.split(",")[0] : ""} → ${route ? route.destination.name.split(",")[0] : ""}</strong>
@@ -133,10 +133,69 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="booking-card-actions">
         <span class="price">${GT.peso(b.totalPrice)}</span>
         <span class="muted" style="font-size:0.78rem;">${b.id}</span>
-        ${showCancel && b.status !== "cancelled" ? `<button class="btn btn-danger-ghost btn-sm" data-cancel="${b.id}">Cancel</button>` : ""}
+        ${showCancel && b.status !== "cancelled" ? `<button class="btn btn-danger-ghost btn-sm" data-cancel="${b.id}" onclick="event.stopPropagation();">Cancel</button>` : ""}
       </div>
     </div>`;
   }
+
+  window.openTicketModal = function(bookingId) {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    const route = booking.route || {};
+    const trip = booking.trip || {};
+    
+    const originName = route.origin ? route.origin.name : "";
+    const destName = route.destination ? route.destination.name : "";
+
+    const ticketHtml = `
+      <div class="ticket-container" style="background: #ffffff; border-radius: 24px; padding: 36px 24px 28px; text-align: center; color: var(--navy-900); position: relative;">
+        <!-- Success Icon -->
+        
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: #0b1e3d;">Your Ticket</h2>
+        <p class="muted" style="font-size: 0.9rem; margin-bottom: 24px; color: #666;">Show this QR ticket at the terminal gate before boarding.</p>
+
+        <!-- Inner Ticket Card Details -->
+        <div style="background: #f4f6f8; border-radius: 16px; padding: 24px 16px;">
+          <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: #0b1e3d;">${originName} → ${destName}</h3>
+          
+          <!-- QR Code -->
+          <div style="background: #fff; display: inline-block; padding: 12px; border-radius: 12px; margin-bottom: 12px;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(booking.id)}" alt="Ticket QR" style="width: 150px; height: 150px; display: block;" />
+          </div>
+
+          <div style="font-weight: 700; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 20px; color: #0b1e3d;">${booking.id}</div>
+
+          <!-- Ticket Properties -->
+          <div style="text-align: left; font-size: 0.88rem; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 16px;">
+            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Date</span><span style="font-weight: 600;">${GT.formatDateLong(trip.date)}</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Departure</span><span style="font-weight: 600;">${trip.departure || "N/A"}</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Bus type</span><span style="font-weight: 600;">${trip.busType || "Standard"}</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Seats</span><span style="font-weight: 600;">${booking.seats.join(", ")}</span></div>
+            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Total paid</span><span style="font-weight: 700; color: #0b1e3d;">${GT.peso(booking.totalPrice)}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("ticket-modal-content").innerHTML = ticketHtml;
+    document.getElementById("ticket-modal").classList.remove("hide");
+    
+    // Prevent background scrolling
+    document.body.style.overflow = "hidden";
+  };
+
+  function closeTicketModal() {
+    document.getElementById("ticket-modal").classList.add("hide");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("ticket-close").addEventListener("click", closeTicketModal);
+  
+  // Close when clicking background overlay
+  document.getElementById("ticket-modal").addEventListener("click", (e) => {
+    if (e.target.id === "ticket-modal") closeTicketModal();
+  });
 
   function emptyState(title, sub, href, cta) {
     return `

@@ -108,11 +108,15 @@ const GT = (() => {
     if (!mount) return;
     const user = getUser();
 
-    const links = [
+    // Define base links
+    let links = [
       { href: "index.ejs", label: "Home", key: "home" },
       { href: "booking.ejs", label: "Book a Trip", key: "booking" },
-      { href: "dashboard.ejs", label: "My Trips", key: "dashboard" },
     ];
+
+    if (user) {
+      links.push({ href: "dashboard.ejs", label: "My Trips", key: "dashboard" });
+    }
 
     const linksHtml = links
       .map(
