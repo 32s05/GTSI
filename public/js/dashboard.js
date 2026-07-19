@@ -138,56 +138,84 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>`;
   }
 
-  window.openTicketModal = function(bookingId) {
+ window.openTicketModal = function(bookingId) {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) return;
 
     const route = booking.route || {};
     const trip = booking.trip || {};
-    
-    const originName = route.origin ? route.origin.name : "";
-    const destName = route.destination ? route.destination.name : "";
 
-    const ticketHtml = `
-      <div class="ticket-container" style="background: #ffffff; border-radius: 24px; padding: 36px 24px 28px; text-align: center; color: var(--navy-900); position: relative;">
-        <!-- Success Icon -->
-        
-        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: #0b1e3d;">Your Ticket</h2>
-        <p class="muted" style="font-size: 0.9rem; margin-bottom: 24px; color: #666;">Show this QR ticket at the terminal gate before boarding.</p>
+    const ticketCardsHtml = booking.passengers.map((p) => {
+        const qrPayload = encodeURIComponent(`GENESIS-TRANSPORT|${booking.id}|${p.seat}|${p.name}`);
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${qrPayload}`;
 
-        <!-- Inner Ticket Card Details -->
-        <div style="background: #f4f6f8; border-radius: 16px; padding: 24px 16px;">
-          <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: #0b1e3d;">${originName} → ${destName}</h3>
-          
-          <!-- QR Code -->
-          <div style="background: #fff; display: inline-block; padding: 12px; border-radius: 12px; margin-bottom: 12px;">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(booking.id)}" alt="Ticket QR" style="width: 150px; height: 150px; display: block;" />
-          </div>
+        return `
+        <div class="ticket-card">
+            <div class="ticket-route" style="font-weight:700; text-align:center; margin-bottom:12px;">
+                ${route.origin.name.split(',')[0]} → ${route.destination.name.split(',')[0]}
+            </div>
+            <div style="
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                background: #fff; 
+                border-radius: 12px; 
+                padding: 16px; 
+                margin-bottom: 20px;
+            ">
+                <img src="${qrUrl}" alt="QR for ${p.name}" style="display: block; width: 100%; max-width: 150px; height: auto;" />
+            </div>
+            <div class="ticket-id" style="text-align:center; margin:16px 0;"><small>ID: ${booking.id} · Seat ${p.seat}</small></div>
+            <div class="ticket-divider" style="border-top:1px dashed #ccc; margin:16px 0;"></div>
+            <div class="ticket-details" style="font-size:0.9rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Passenger</span><strong>${p.name}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Date</span><strong>${GT.formatDateLong(trip.date)}</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Departure</span><strong>${trip.departure}</strong></div>
+            </div>
+        </div>`;
+    }).join('');
 
-          <div style="font-weight: 700; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 20px; color: #0b1e3d;">${booking.id}</div>
+    document.getElementById("ticket-modal-content").innerHTML = `
+        <div class="ticket-panel" style="background:#fff; border-radius:24px; width:90%; max-width:500px; margin:auto; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+            <span class="close-modal-btn" onclick="closeTicketModal()">&times;</span>
 
-          <!-- Ticket Properties -->
-          <div style="text-align: left; font-size: 0.88rem; display: flex; flex-direction: column; gap: 8px; border-top: 1px dashed rgba(0,0,0,0.1); padding-top: 16px;">
-            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Date</span><span style="font-weight: 600;">${GT.formatDateLong(trip.date)}</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Departure</span><span style="font-weight: 600;">${trip.departure || "N/A"}</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Bus type</span><span style="font-weight: 600;">${trip.busType || "Standard"}</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Seats</span><span style="font-weight: 600;">${booking.seats.join(", ")}</span></div>
-            <div style="display: flex; justify-content: space-between;"><span style="color: #666;">Total paid</span><span style="font-weight: 700; color: #0b1e3d;">${GT.peso(booking.totalPrice)}</span></div>
-          </div>
+            <h2 style="text-align:center; margin:0 0 8px;">Booking confirmed!</h2>
+            <p style="text-align:center; color:#666; margin-bottom:0;">Show this QR ticket at the terminal gate.</p>
+            
+            <div id="scroll-container" class="tickets-scroll-container">
+                ${ticketCardsHtml}
+            </div>
+            
+            <div id="pagination-dots" class="pagination-dots">
+                ${booking.passengers.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+            </div>
         </div>
-      </div>
     `;
 
-    document.getElementById("ticket-modal-content").innerHTML = ticketHtml;
-    document.getElementById("ticket-modal").classList.remove("hide");
-    
-    // Prevent background scrolling
-    document.body.style.overflow = "hidden";
-  };
+    const container = document.getElementById("scroll-container");
+    container.addEventListener("scroll", () => {
+        const index = Math.round(container.scrollLeft / container.offsetWidth);
+        document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === index));
+    });
 
+    document.getElementById("ticket-modal").classList.remove("hide");
+
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100vh";
+};
+
+  // Change this:
   function closeTicketModal() {
     document.getElementById("ticket-modal").classList.add("hide");
-    document.body.style.overflow = "";
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
+  }
+
+  // To this (attach it to window):
+  window.closeTicketModal = function() {
+    document.getElementById("ticket-modal").classList.add("hide");
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
   }
 
   document.getElementById("ticket-close").addEventListener("click", closeTicketModal);

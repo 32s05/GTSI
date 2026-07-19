@@ -118,17 +118,93 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("checkout-subtitle").textContent = "Your seat is reserved.";
     document.getElementById("confirmation-step").classList.remove("hide");
 
-    document.getElementById("ticket-route").textContent = `${route.origin.name} → ${route.destination.name}`;
-    document.getElementById("ticket-id").textContent = booking.id;
-    const qrPayload = encodeURIComponent(`GENESIS-TRANSPORT|${booking.id}|${seats.join(",")}`);
-    document.getElementById("ticket-qr-img").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${qrPayload}`;
+    const container = document.getElementById("tickets-container");
+    container.innerHTML = ""; // Clear previous
 
-    document.getElementById("ticket-details").innerHTML = `
-      <div class="row"><span>Date</span><strong>${GT.formatDateLong(date)}</strong></div>
-      <div class="row"><span>Departure</span><strong>${trip.departure}</strong></div>
-      <div class="row"><span>Bus type</span><strong>${trip.busType} · ${trip.plate}</strong></div>
-      <div class="row"><span>Seats</span><strong>${seats.join(", ")}</strong></div>
-      <div class="row"><span>Total paid</span><strong>${GT.peso(total)}</strong></div>
-    `;
+    booking.passengers.forEach((p, index) => {
+      const qrPayload = encodeURIComponent(`GENESIS-TRANSPORT|${booking.id}|${p.seat}|${p.name}`);
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${qrPayload}`;
+
+      const card = document.createElement("div");
+      card.className = "ticket-card";
+      card.innerHTML = `
+        <div class="ticket-route">${route.origin.name} → ${route.destination.name}</div>
+        <div class="ticket-qr"><img src="${qrUrl}" alt="QR for ${p.name}" width="150" height="150" /></div>
+        <div class="ticket-id">ID: ${booking.id} · Seat ${p.seat}</div>
+        <div class="ticket-divider"></div>
+        <div class="ticket-details">
+          <div class="row"><span>Passenger</span><strong>${p.name}</strong></div>
+          <div class="row"><span>Date</span><strong>${GT.formatDateLong(date)}</strong></div>
+          <div class="row"><span>Departure</span><strong>${trip.departure}</strong></div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    GT.clearDraft();
+    initPdfExport();
   }
+
+  async function initPdfExport() {
+    const exportBtn = document.getElementById('export-pdf-btn');
+    if (!exportBtn) return;
+
+    exportBtn.addEventListener('click', async () => {
+      if (typeof window.jspdf === 'undefined' && !window.jsPDF) {
+        GT.toast("Library still loading, please wait...", "warning");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf || { jsPDF: window.jsPDF };
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      
+      const ticketCards = document.querySelectorAll('#tickets-container .ticket-card');
+      
+      ticketCards.forEach((card, index) => {
+        if (index > 0) doc.addPage();
+        
+        const x = 50; // Horizontal offset for center
+        const y = 30; // Vertical offset
+        const w = 110; // Card width
+        const h = 140; // Card height
+
+        // 1. Draw Card Background (matches your UI's light grey)
+        doc.setFillColor(243, 244, 246);
+        doc.roundedRect(x, y, w, h, 5, 5, 'F');
+        
+        // 2. Route Text
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text(card.querySelector('.ticket-route').textContent, x + w/2, y + 15, { align: 'center' });
+        
+        // 3. QR Code
+        const qrImg = card.querySelector('img').src;
+        doc.addImage(qrImg, 'PNG', x + (w - 60)/2, y + 25, 60, 60);
+        
+        // 4. ID & Seat
+        doc.setFontSize(12);
+        doc.text(card.querySelector('.ticket-id').textContent, x + w/2, y + 100, { align: 'center' });
+        
+        // 5. Divider
+        doc.setDrawColor(200, 200, 200);
+        doc.line(x + 10, y + 108, x + w - 10, y + 108);
+        
+        // 6. Details (Passenger, Date, Departure)
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(11);
+        const rows = card.querySelectorAll('.ticket-details .row');
+        rows.forEach((row, rIdx) => {
+          const spans = row.querySelectorAll('span, strong');
+          // Label on the left
+          doc.text(spans[0].textContent, x + 10, y + 120 + (rIdx * 7));
+          // Value on the right
+          doc.text(spans[1].textContent, x + w - 10, y + 120 + (rIdx * 7), { align: 'right' });
+        });
+      });
+
+      doc.save('Genesis_Tickets.pdf');
+    });
+  }
+
 });

@@ -853,7 +853,12 @@ button { font-family: inherit; }
 .payment-option .label { font-weight: 600; font-size: 0.9rem; color: var(--navy-900); }
 .payment-option .sub { font-size: 0.78rem; color: var(--faint); }
 
-.ticket-panel { padding: 40px 34px; }
+.ticket-panel { 
+  padding: 40px 34px;
+  overflow: visible !important;
+  position: relative;
+ }
+
 .ticket-check {
   width: 56px; height: 56px;
   border-radius: 50%;
@@ -861,12 +866,46 @@ button { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 18px;
 }
+
+.pagination-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d1d5db; /* Default grey */
+}
+
+.dot.active { background-color: #071224; } /* Active color */
+
+.tickets-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px; /* Space between cards */
+  padding: 20px 40px; /* Important: Padding adds space on the sides to see peeking cards */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tickets-scroll-container::-webkit-scrollbar { display: none; }
+
 .ticket-card {
+  margin: 0;
+  box-shadow: var(--shadow-md);
   background: var(--surface-alt);
   border-radius: var(--radius-md);
   padding: 24px;
   margin-top: 24px;
   text-align: left;
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
 }
 .ticket-route { font-family: var(--font-display); font-weight: 700; text-align: center; margin-bottom: 16px; }
 .ticket-qr { display: flex; justify-content: center; margin-bottom: 14px; }
@@ -876,6 +915,16 @@ button { font-family: inherit; }
 .ticket-details { display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
 .ticket-details .row { display: flex; justify-content: space-between; color: var(--muted); }
 .ticket-details .row strong { color: var(--navy-950); }
+
+.close-modal-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    font-size: 24px;
+    color: #666;
+    z-index: 10;
+}
 
 @media (max-width: 900px) {
   .checkout-layout { grid-template-columns: 1fr; }

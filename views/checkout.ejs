@@ -13,7 +13,7 @@
 
 <header class="page-hero" style="padding-bottom:24px;">
   <div class="container">
-    <a href="seats.html" class="back-link" id="back-link">&larr; Back to seat selection</a>
+    <a href="seats.ejs" class="back-link" id="back-link">&larr; Back to seat selection</a>
     <h1 class="mt-8" id="checkout-title">Passenger details</h1>
     <p id="checkout-subtitle"></p>
   </div>
@@ -63,15 +63,8 @@
       <h2>Booking confirmed!</h2>
       <p class="muted">Show this QR ticket at the terminal gate before boarding.</p>
 
-      <div class="ticket-card">
-        <div class="ticket-route" id="ticket-route"></div>
-        <div class="ticket-qr">
-          <img id="ticket-qr-img" alt="Booking QR code" width="150" height="150" />
-        </div>
-        <div class="ticket-id" id="ticket-id"></div>
-        <div class="ticket-divider"></div>
-        <div class="ticket-details" id="ticket-details"></div>
-      </div>
+      <div id="tickets-container" class="tickets-scroll-container"></div>
+      <div id="pagination-dots" class="pagination-dots"></div>
 
       <div class="flex gap-12 mt-24" style="justify-content:center;">
         <a href="dashboard.ejs" class="btn btn-primary">Go to My Trips</a>
