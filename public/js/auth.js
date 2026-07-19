@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
+      const contact = document.getElementById("contact").value.trim();
       const password = document.getElementById("password").value;
       const confirm = document.getElementById("confirm").value;
       const terms = document.getElementById("terms").checked;
@@ -62,10 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const emailOk = /\S+@\S+\.\S+/.test(email);
       setError("field-name", !name);
       setError("field-email", !emailOk);
+      setError("field-contact", !contact);
       setError("field-password", password.length < 6);
       setError("field-confirm", password !== confirm);
 
-      if (!name || !emailOk || password.length < 6 || password !== confirm) return;
+      if (!name || !emailOk || !contact || password.length < 6 || password !== confirm) return;
       if (!terms) {
         GT.toast("Please agree to the Terms of Service to continue.", "error");
         return;
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const { user } = await GT.api("/api/auth/signup", {
           method: "POST",
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ name, email, password, contact }),
         });
         GT.setUser(user);
         GT.toast(`Account created — welcome, ${user.name.split(" ")[0]}!`, "success");

@@ -4,7 +4,13 @@ const app = express();
 const PORT = 3000;
 
 // Import your custom in-memory store
+const User = require('./models/User');
+const Booking = require('./models/Booking');
 const DB = require('./data/store');
+require('dotenv').config();
+
+const connectDB = require('./config/db');
+
 
 // Set up EJS templating engine
 app.set('view engine', 'ejs');
@@ -31,31 +37,72 @@ app.get('/signup.ejs', (req, res) => res.render('signup'));
 // ==========================================
 
 // --- AUTH APIs ---
-app.post('/api/auth/signup', (req, res) => {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-        return res.status(400).json({ error: "Please fill out all fields." });
-    }
-    
-    // Check if user already exists
-    const existing = DB.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existing) return res.status(400).json({ error: "Email is already registered." });
+app.post('/api/auth/signup', async (req, res) => {
+    try {
+        const { name, email, password, contact } = req.body;
 
-    const newUser = { id: `u-${Date.now()}`, name, email, password };
-    DB.users.push(newUser);
-    
-    res.json({ user: { id: newUser.id, name: newUser.name, email: newUser.email } });
+        const existing = await User.findOne({
+            email: email.toLowerCase()
+        });
+
+        if (existing) {
+            return res.status(400).json({
+                error: 'Email already registered.'
+            });
+        }
+
+        const user = await User.create({
+            name,
+            email,
+            password,
+            contact
+        });
+
+        res.json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                contact: user.contact
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
 });
 
-app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
-    const user = DB.users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    
-    if (!user) {
-        return res.status(401).json({ error: "Invalid email or password." });
+app.post('/api/auth/login', async (req, res) => {
+    try {
+
+        const { email, password } = req.body;
+
+        const user = await User.findOne({
+            email: email.toLowerCase()
+        });
+
+        if (!user || user.password !== password) {
+            return res.status(401).json({
+                error: 'Invalid email or password.'
+            });
+        }
+
+        res.json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                contact: user.contact
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
     }
-    
-    res.json({ user: { id: user.id, name: user.name, email: user.email } });
 });
 
 // --- TERMINALS & ROUTES APIs ---
@@ -113,60 +160,81 @@ app.get('/api/trips/:tripId/seats', (req, res) => {
 });
 
 // --- BOOKINGS ENGINE ---
-app.post('/api/bookings', (req, res) => {
-    const { userId, tripId, routeId, trip, seats, passengers, paymentMethod } = req.body;
-    
-    // Calculate total pricing based on selected seats and the flat ₱20 terminal fee
-    const totalPrice = (trip.price * seats.length) + 20;
 
-    // Use the store's core instance creation function
-    const booking = DB.createBooking({
-        userId,
-        tripId,
-        routeId,
-        trip,
-        seats,
-        passengers,
-        paymentMethod,
-        totalPrice
-    });
+app.get('/api/bookings', async (req, res) => {
 
-    res.json({ booking });
-});
+    try {
 
-app.get('/api/bookings', (req, res) => {
-    const { userId } = req.query;
-    
-    // Filter the bookings list tracking entries belonging to this specific ID
-    const matches = DB.bookings.filter(b => b.userId === userId);
-    
-    // Enrich each booking object with structural data before returning
-    const enrichedMatches = matches.map(b => ({
-        ...b,
-        route: DB.ROUTES.map(r => ({
-            ...r,
-            origin: DB.terminalByCode(r.originCode),
-            destination: DB.terminalByCode(r.destCode)
-        })).find(r => r.id === b.routeId)
-    }));
+        const { userId } = req.query;
 
-    res.json({ bookings: enrichedMatches });
-});
+        const bookings =
+            await Booking.find({ userId });
 
-app.delete('/api/bookings/:bookingId', (req, res) => {
-    const { bookingId } = req.params;
-    const target = DB.bookings.find(b => b.id === bookingId);
-    
-    if (!target) {
-        return res.status(404).json({ error: "Booking reservation not found." });
+        const enrichedMatches = bookings.map(b => ({
+            ...b.toObject(),
+            route: DB.ROUTES
+                .map(r => ({
+                    ...r,
+                    origin: DB.terminalByCode(r.originCode),
+                    destination: DB.terminalByCode(r.destCode)
+                }))
+                .find(r => r.id === b.routeId)
+        }));
+
+        res.json({
+            bookings: enrichedMatches
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
     }
+});
 
-    target.status = "cancelled";
-    res.json({ booking: target });
+app.post('/api/bookings', async (req, res) => {
+    try {
+        const { userId, tripId, routeId, trip, seats, passengers, paymentMethod } = req.body;
+        const totalPrice = (trip.price * seats.length) + 20;
+
+        // Generate a random ID like GT-1A2B3
+        const uniqueId = `GT-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
+        const booking = await Booking.create({ 
+            _id: uniqueId, // Set custom ID
+            userId, tripId, routeId, trip, seats, passengers, paymentMethod, totalPrice 
+        });
+        
+        res.json({ booking: { ...booking.toObject(), id: booking._id } });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/bookings/:bookingId', async (req, res) => {
+    try {
+        const booking = await Booking.findOneAndUpdate(
+            { _id: req.params.bookingId }, // Explicit filter object
+            { status: 'cancelled' },
+            { new: true }
+        );
+
+        if (!booking) {
+            return res.status(404).json({
+                error: 'Booking not found.'
+            });
+        }
+
+        res.json({ booking });
+    } catch (err) {
+        res.status(500).json({
+            error: err.message
+        });
+    }
 });
 
 // 404 Fallback routing handler
 app.use((req, res) => res.status(404).render('404'));
+
+connectDB();
 
 // Launch application lifecycle listener execution
 app.listen(PORT, () => {

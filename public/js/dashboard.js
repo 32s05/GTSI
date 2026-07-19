@@ -1,4 +1,83 @@
-// public/js/dashboard.js
+let bookings = [];
+let cancelTargetId = null;
+
+window.openTicketModal = function(bookingId) {
+    const booking = bookings.find(b => b._id === bookingId);
+    if (!booking) return;
+
+    const route = booking.route || {};
+    const trip = booking.trip || {};
+
+    const ticketCardsHtml = booking.passengers.map((p) => {
+        const qrPayload = encodeURIComponent(`GENESIS-TRANSPORT|${booking._id}|${p.seat}|${p.name}`);
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${qrPayload}`;
+
+        return `
+        <div class="ticket-card">
+              <div class="ticket-route" style="font-weight:700; text-align:center; margin-bottom:12px;">
+                  ${route.origin.name.split(',')[0]} → ${route.destination.name.split(',')[0]}
+              </div>
+              <div style="
+                  display: flex; 
+                  justify-content: center; 
+                  align-items: center; 
+                  background: #fff; 
+                  border-radius: 12px; 
+                  padding: 16px; 
+                  margin-bottom: 20px;
+              ">
+                  <img src="${qrUrl}" alt="QR for ${p.name}" style="display: block; width: 100%; max-width: 150px; height: auto;" />
+              </div>
+              <div class="ticket-id" style="text-align:center; margin:16px 0;"><small>ID: ${booking._id} · Seat ${p.seat}</small></div>
+              <div class="ticket-divider" style="border-top:1px dashed #ccc; margin:16px 0;"></div>
+              <div class="ticket-details" style="font-size:0.9rem;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Passenger</span><strong>${p.name}</strong></div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Date</span><strong>${GT.formatDateLong(trip.date)}</strong></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Departure</span><strong>${trip.departure}</strong></div>
+              </div>
+          </div>`;
+    }).join('');
+
+    document.getElementById("ticket-modal-content").innerHTML = `
+        <div class="ticket-panel" style="background:#fff; border-radius:24px; width:90%; max-width:500px; margin:auto; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+            <span class="close-modal-btn" onclick="closeTicketModal()">&times;</span>
+
+            <h2 style="text-align:center; margin:0 0 8px;">Booking confirmed!</h2>
+            <p style="text-align:center; color:#666; margin-bottom:0;">Show this QR ticket at the terminal gate.</p>
+            
+            <div id="scroll-container" class="tickets-scroll-container">
+                ${ticketCardsHtml}
+            </div>
+            
+            <div id="pagination-dots" class="pagination-dots">
+                ${booking.passengers.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+            </div>
+        </div>
+    `;
+
+    const container = document.getElementById("scroll-container");
+    container.addEventListener("scroll", () => {
+        const index = Math.round(container.scrollLeft / container.offsetWidth);
+        document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === index));
+    });
+
+    document.getElementById("ticket-modal").classList.remove("hide");
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100vh";
+};
+
+window.closeTicketModal = function() {
+  document.getElementById("ticket-modal").classList.add("hide");
+  document.body.style.overflow = "auto";
+};
+
+
+window.closeTicketModal = function() {
+  document.getElementById("ticket-modal").classList.add("hide");
+  document.body.style.overflow = "auto";
+  document.body.style.height = "auto";
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   GT.renderNav("dashboard");
   GT.renderFooter();
@@ -19,9 +98,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function saveFavorites(set) {
     localStorage.setItem(favKey, JSON.stringify([...set]));
   }
-
-  let bookings = [];
-  let cancelTargetId = null;
 
   try {
     const data = await GT.api(`/api/bookings?userId=${encodeURIComponent(user.id)}`);
@@ -92,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.getElementById("upcoming-list").innerHTML = upcoming.length
       ? upcoming.map((b) => bookingCard(b, true)).join("")
-      : emptyState("No upcoming trips", "When you book a trip, it'll show up here with your QR ticket ready to go.", "booking.html", "Book a trip");
+      : emptyState("No upcoming trips", "When you book a trip, it'll show up here with your QR ticket ready to go.", "booking.ejs", "Book a trip");
 
     document.getElementById("past-list").innerHTML = past.length
       ? past.map((b) => bookingCard(b, false)).join("")
@@ -117,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         : `<span class="badge" style="background:var(--surface-alt);color:var(--muted);">Completed</span>`;
 
     return `
-    <div class="booking-card" style="cursor: pointer;" onclick="openTicketModal('${b.id}')">
+    <div class="booking-card" style="cursor: pointer;" onclick="openTicketModal('${b._id}')">
       <div>
         <div class="flex-between" style="max-width:400px;">
           <strong>${route ? route.origin.name.split(",")[0] : ""} → ${route ? route.destination.name.split(",")[0] : ""}</strong>
@@ -132,93 +208,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
       <div class="booking-card-actions">
         <span class="price">${GT.peso(b.totalPrice)}</span>
-        <span class="muted" style="font-size:0.78rem;">${b.id}</span>
-        ${showCancel && b.status !== "cancelled" ? `<button class="btn btn-danger-ghost btn-sm" data-cancel="${b.id}" onclick="event.stopPropagation();">Cancel</button>` : ""}
+        <span class="muted" style="font-size:0.78rem;">${b._id}</span>
+        ${showCancel && b.status !== "cancelled" ? `<button class="btn btn-danger-ghost btn-sm" data-cancel="${b._id}" onclick="event.stopPropagation();">Cancel</button>` : ""}
       </div>
     </div>`;
   }
-
- window.openTicketModal = function(bookingId) {
-    const booking = bookings.find(b => b.id === bookingId);
-    if (!booking) return;
-
-    const route = booking.route || {};
-    const trip = booking.trip || {};
-
-    const ticketCardsHtml = booking.passengers.map((p) => {
-        const qrPayload = encodeURIComponent(`GENESIS-TRANSPORT|${booking.id}|${p.seat}|${p.name}`);
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=0&data=${qrPayload}`;
-
-        return `
-        <div class="ticket-card">
-            <div class="ticket-route" style="font-weight:700; text-align:center; margin-bottom:12px;">
-                ${route.origin.name.split(',')[0]} → ${route.destination.name.split(',')[0]}
-            </div>
-            <div style="
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                background: #fff; 
-                border-radius: 12px; 
-                padding: 16px; 
-                margin-bottom: 20px;
-            ">
-                <img src="${qrUrl}" alt="QR for ${p.name}" style="display: block; width: 100%; max-width: 150px; height: auto;" />
-            </div>
-            <div class="ticket-id" style="text-align:center; margin:16px 0;"><small>ID: ${booking.id} · Seat ${p.seat}</small></div>
-            <div class="ticket-divider" style="border-top:1px dashed #ccc; margin:16px 0;"></div>
-            <div class="ticket-details" style="font-size:0.9rem;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Passenger</span><strong>${p.name}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Date</span><strong>${GT.formatDateLong(trip.date)}</strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Departure</span><strong>${trip.departure}</strong></div>
-            </div>
-        </div>`;
-    }).join('');
-
-    document.getElementById("ticket-modal-content").innerHTML = `
-        <div class="ticket-panel" style="background:#fff; border-radius:24px; width:90%; max-width:500px; margin:auto; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
-            <span class="close-modal-btn" onclick="closeTicketModal()">&times;</span>
-
-            <h2 style="text-align:center; margin:0 0 8px;">Booking confirmed!</h2>
-            <p style="text-align:center; color:#666; margin-bottom:0;">Show this QR ticket at the terminal gate.</p>
-            
-            <div id="scroll-container" class="tickets-scroll-container">
-                ${ticketCardsHtml}
-            </div>
-            
-            <div id="pagination-dots" class="pagination-dots">
-                ${booking.passengers.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
-            </div>
-        </div>
-    `;
-
-    const container = document.getElementById("scroll-container");
-    container.addEventListener("scroll", () => {
-        const index = Math.round(container.scrollLeft / container.offsetWidth);
-        document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === index));
-    });
-
-    document.getElementById("ticket-modal").classList.remove("hide");
-
-    document.body.style.overflow = "hidden";
-    document.body.style.height = "100vh";
-};
-
-  // Change this:
-  function closeTicketModal() {
-    document.getElementById("ticket-modal").classList.add("hide");
-    document.body.style.overflow = "auto";
-    document.body.style.height = "auto";
-  }
-
-  // To this (attach it to window):
-  window.closeTicketModal = function() {
-    document.getElementById("ticket-modal").classList.add("hide");
-    document.body.style.overflow = "auto";
-    document.body.style.height = "auto";
-  }
-
-  document.getElementById("ticket-close").addEventListener("click", closeTicketModal);
   
   // Close when clicking background overlay
   document.getElementById("ticket-modal").addEventListener("click", (e) => {
@@ -236,26 +230,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   document.getElementById("cancel-dismiss").addEventListener("click", closeCancelModal);
+
   document.getElementById("cancel-confirm").addEventListener("click", async () => {
     if (!cancelTargetId) return;
-    const btn = document.getElementById("cancel-confirm");
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Cancelling…`;
     try {
-      const { booking } = await GT.api(`/api/bookings/${encodeURIComponent(cancelTargetId)}`, { method: "DELETE" });
-      const idx = bookings.findIndex((b) => b.id === booking.id);
-      if (idx > -1) bookings[idx] = { ...bookings[idx], status: "cancelled" };
-      GT.toast("Booking cancelled.", "success");
-      renderStats();
-      renderBookingLists();
+        await GT.api(`/api/bookings/${encodeURIComponent(cancelTargetId)}`, { method: "DELETE" });
+        
+        // Update local state by finding the booking by _id
+        const idx = bookings.findIndex((b) => b._id === cancelTargetId);
+        if (idx > -1) {
+            bookings[idx].status = "cancelled";
+        }
+        
+        GT.toast("Booking cancelled.", "success");
+        renderBookingLists(); // Re-render to update badges
     } catch (err) {
-      GT.toast(err.message, "error");
+        GT.toast(err.message, "error");
     } finally {
-      btn.disabled = false;
-      btn.textContent = "Cancel booking";
-      closeCancelModal();
+        closeCancelModal();
     }
   });
+  
   function closeCancelModal() {
     cancelTargetId = null;
     document.getElementById("cancel-modal").classList.add("hide");

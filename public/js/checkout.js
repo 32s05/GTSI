@@ -32,18 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Passenger form, one block per seat
   const form = document.getElementById("passenger-form");
   form.innerHTML = seats
-    .map(
-      (seat, i) => `
+  .map(
+    (seat, i) => `
     <div class="passenger-block">
       <div class="passenger-block-title">Passenger ${i + 1} <span class="seat-tag">Seat ${seat}</span></div>
       <div class="passenger-grid">
         <div class="field">
           <label for="pname-${i}">Full name</label>
-          <input type="text" id="pname-${i}" placeholder="e.g. Juan Dela Cruz" required value="${i === 0 ? user.name : ""}" />
+          <input type="text" id="pname-${i}" placeholder="e.g. Juan Dela Cruz" required value="${i === 0 ? (user.name || "") : ""}" />
         </div>
         <div class="field">
           <label for="pcontact-${i}">Contact number</label>
-          <input type="tel" id="pcontact-${i}" placeholder="09XXXXXXXXX" required />
+          <!-- ADD THIS value attribute to pull the user's contact -->
+          <input type="tel" id="pcontact-${i}" placeholder="09XXXXXXXXX" required value="${i === 0 ? (user.contact || "") : ""}" />
         </div>
       </div>
     </div>`
