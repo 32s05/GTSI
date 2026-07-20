@@ -9,17 +9,7 @@
 </head>
 <body>
 
-<nav class="navbar" id="site-nav">
-  <div class="container">
-    <a href="index.ejs" class="brand">Genesis Transport</a>
-    <!-- These IDs MUST match the getElementById calls in main.js -->
-    <div class="nav-links" id="nav-links-container"></div>
-    <div class="nav-actions" id="nav-actions-container"></div>
-    <button class="nav-toggle" id="nav-toggle">Menu</button>
-  </div>
-</nav>
-
-<div id="mobile-menu" style="background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:none;"></div>
+<div id="site-nav"></div>
 
 <!-- ================= HERO ================= -->
 <header class="hero">
@@ -206,10 +196,5 @@
 
 <script src="js/main.js"></script>
 <script src="js/landing.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    GT.renderNav("home"); // Ensure "home" matches your page key
-  });
-</script>
 </body>
 </html>

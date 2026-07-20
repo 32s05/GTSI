@@ -177,4 +177,81 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
   }
+
+  // Hide the sticky results summary when the results list scrolls past its top
+  function setupSummaryVisibility() {
+    const resultsListParent = resultsContainer.parentElement; // .results-list
+    if (!resultsSummary || !resultsContainer || window.innerWidth <= 900) return;
+
+    // Add a sentinel before the results container to observe when it crosses the navbar line
+    let sentinel = document.getElementById('results-sentinel');
+    if (!sentinel) {
+      sentinel = document.createElement('div');
+      sentinel.id = 'results-sentinel';
+      resultsContainer.parentNode.insertBefore(sentinel, resultsContainer);
+      sentinel.style.width = '1px';
+      sentinel.style.height = '1px';
+      sentinel.style.margin = '0';
+      sentinel.style.padding = '0';
+    }
+
+    const navbarHeight = document.querySelector('.navbar')?.offsetHeight || 76;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        // When the sentinel scrolls out of view (we've scrolled past the summary position),
+        // make the summary a fixed overlay so trip cards scroll underneath and get cropped.
+        if (!entry.isIntersecting) {
+          // compute bounds for the results column so the fixed overlay lines up
+          const colRect = resultsListParent.getBoundingClientRect();
+          const summaryHeight = resultsSummary.offsetHeight || 56;
+
+          // Make a spacer (sentinel) take up the summary height in the flow
+          sentinel.style.height = summaryHeight + 'px';
+
+          resultsSummary.classList.add('fixed-summary');
+          resultsSummary.classList.remove('hide-summary');
+          resultsSummary.style.position = 'fixed';
+          resultsSummary.style.top = (navbarHeight + 12) + 'px';
+          resultsSummary.style.left = colRect.left + 'px';
+          resultsSummary.style.width = colRect.width + 'px';
+          resultsSummary.style.zIndex = 900;
+        } else {
+          // restore normal (non-fixed) behavior
+          sentinel.style.height = '0px';
+          resultsSummary.classList.remove('fixed-summary');
+          resultsSummary.classList.remove('hide-summary');
+          resultsSummary.style.position = '';
+          resultsSummary.style.top = '';
+          resultsSummary.style.left = '';
+          resultsSummary.style.width = '';
+          resultsSummary.style.zIndex = '';
+        }
+      });
+    }, { root: null, rootMargin: `-${navbarHeight}px 0px 0px 0px`, threshold: 0 });
+
+    observer.observe(sentinel);
+
+    // Re-evaluate on resize so navbar height and column width stay correct
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth <= 900) {
+          sentinel.style.height = '0px';
+          resultsSummary.classList.remove('fixed-summary');
+          resultsSummary.style.position = '';
+          resultsSummary.style.top = '';
+          resultsSummary.style.left = '';
+          resultsSummary.style.width = '';
+          resultsSummary.style.zIndex = '';
+        } else {
+          // force a recalculation by triggering the observer with a small scroll
+          window.dispatchEvent(new Event('scroll'));
+        }
+      }, 120);
+    });
+  }
+
+  // Initialize the visibility observer once
+  setupSummaryVisibility();
 });

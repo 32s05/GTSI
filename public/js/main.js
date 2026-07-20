@@ -97,13 +97,34 @@ const GT = (() => {
     const user = getUser();
     if (!user) {
       sessionStorage.setItem("gt_redirect_after_login", location.pathname.split("/").pop());
-      location.href = redirectTo;
+      const target = redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`;
+      location.href = target;
       return null;
     }
     return user;
   }
 
   function renderNav(activePage) {
+    let mount = document.getElementById("site-nav");
+    if (!mount) {
+      mount = document.createElement("div");
+      mount.id = "site-nav";
+      document.body.prepend(mount);
+    }
+    if (!mount) return;
+
+    mount.innerHTML = `
+      <nav class="navbar">
+        <div class="container">
+          <a href="/index.ejs" class="brand"><span class="brand-mark"><img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" /></span>Genesis Transport</a>
+          <div class="nav-links" id="nav-links-container"></div>
+          <div class="nav-actions" id="nav-actions-container"></div>
+          <button class="nav-toggle" id="nav-toggle">Menu</button>
+        </div>
+      </nav>
+      <div id="mobile-menu" style="background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:none;"></div>
+    `;
+
     const linksMount = document.getElementById("nav-links-container");
     const actionsMount = document.getElementById("nav-actions-container");
     const mobileMount = document.getElementById("mobile-menu");
@@ -111,15 +132,15 @@ const GT = (() => {
 
     const user = getUser();
     let links = [
-      { href: "index.ejs", label: "Home", key: "home" },
-      { href: "booking.ejs", label: "Book a Trip", key: "booking" },
+      { href: "/index.ejs", label: "Home", key: "home" },
+      { href: "/booking.ejs", label: "Book a Trip", key: "booking" },
     ];
-    if (user) links.push({ href: "dashboard.ejs", label: "My Trips", key: "dashboard" });
+    if (user) links.push({ href: "/dashboard.ejs", label: "My Trips", key: "dashboard" });
 
     const linksHtml = links.map(l => `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`).join("");
     const actionsHtml = user
       ? `<div class="nav-user"><div class="avatar">${initials(user.name)}</div><span>${user.name.split(" ")[0]}</span></div><button class="btn btn-ghost btn-sm" id="nav-logout">Log out</button>`
-      : `<a href="login.ejs" class="btn btn-ghost btn-sm">Log in</a><a href="signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
+      : `<a href="/login.ejs" class="btn btn-ghost btn-sm">Log in</a><a href="/signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
 
     // Update containers instead of replacing the whole navbar
     linksMount.innerHTML = linksHtml;
@@ -132,12 +153,17 @@ const GT = (() => {
     });
     document.getElementById("nav-logout")?.addEventListener("click", () => {
       clearUser();
-      location.href = "index.ejs";
+      location.href = "/index.ejs";
     });
   }
 
   function renderFooter() {
-    const mount = document.getElementById("site-footer");
+    let mount = document.getElementById("site-footer");
+    if (!mount) {
+      mount = document.createElement("div");
+      mount.id = "site-footer";
+      document.body.appendChild(mount);
+    }
     if (!mount) return;
     mount.innerHTML = `
       <footer class="site-footer">
@@ -153,25 +179,34 @@ const GT = (() => {
           </div>
           <div>
             <h4>Product</h4>
-            <a href="booking.ejs">Book a trip</a>
-            <a href="dashboard.ejs">My trips</a>
-            <a href="index.ejs#routes">Routes</a>
+            <a href="/booking.ejs">Book a trip</a>
+            <a href="/dashboard.ejs">My trips</a>
+            <a href="/index.ejs#routes">Routes</a>
           </div>
           <div>
             <h4>Company</h4>
-            <a href="index.ejs#about">About</a>
-            <a href="index.ejs#faq">FAQ</a>
+            <a href="/index.ejs#about">About</a>
+            <a href="/index.ejs#faq">FAQ</a>
           </div>
           <div>
             <h4>Account</h4>
-            <a href="login.ejs">Log in</a>
-            <a href="signup.ejs">Sign up</a>
+            <a href="/login.ejs">Log in</a>
+            <a href="/signup.ejs">Sign up</a>
           </div>
         </div>
         <div class="footer-bottom">© ${new Date().getFullYear()} Genesis Transport Service, Inc. — Prototype build for academic use.</div>
       </footer>
     `;
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Extract the page name from the URL, e.g., 'booking.ejs' -> 'booking'
+    const path = window.location.pathname.split("/").pop();
+    const pageKey = path.split(".")[0] || "home";
+    
+    GT.renderNav(pageKey);
+    GT.renderFooter(); // You likely want this on all pages too
+  });
 
   return {
     getUser, setUser, clearUser,
