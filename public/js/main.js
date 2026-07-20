@@ -139,7 +139,7 @@ const GT = (() => {
 
     const linksHtml = links.map(l => `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`).join("");
     const actionsHtml = user
-      ? `<div class="nav-user"><div class="avatar">${initials(user.name)}</div><span>${user.name.split(" ")[0]}</span></div><button class="btn btn-ghost btn-sm" id="nav-logout">Log out</button>`
+      ? `<div class="nav-user"><div class="avatar">${initials(user.name)}</div><span>${user.name.split(" ")[0]}</span></div><button class="btn btn-ghost btn-sm nav-logout">Log out</button>`
       : `<a href="/login.ejs" class="btn btn-ghost btn-sm">Log in</a><a href="/signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
 
     // Update containers instead of replacing the whole navbar
@@ -151,9 +151,14 @@ const GT = (() => {
     document.getElementById("nav-toggle")?.addEventListener("click", () => {
       mobileMount.style.display = mobileMount.style.display === "block" ? "none" : "block";
     });
-    document.getElementById("nav-logout")?.addEventListener("click", () => {
-      clearUser();
-      location.href = "/index.ejs";
+
+    // Attach logout handlers to any logout buttons (desktop + mobile)
+    document.querySelectorAll('.nav-logout').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearUser();
+        location.href = '/index.ejs';
+      });
     });
   }
 
