@@ -41,13 +41,47 @@
         </div>
         <div class="field" id="field-contact">
           <label for="contact">Contact number</label>
-          <input type="tel" id="contact" required placeholder="09xxxxxxxxx" />
-          <p class="field-error">Enter a valid contact number.</p>
+          <input 
+            type="tel" 
+            id="contact" 
+            value="09" 
+            required 
+            maxlength="11"
+            pattern="09[0-9]{9}"
+            oninput="
+              // Step 1: Strip out any letters or non-numbers
+              let numbersOnly = this.value.replace(/[^0-9]/g, '');
+              
+              // Step 2: Force the field to always start with 09
+              if (!numbersOnly.startsWith('09')) {
+                this.value = '09';
+              } else {
+                this.value = numbersOnly;
+              }
+            "
+            onkeydown="
+              // Step 3: Prevent the user from using Backspace/Delete to erase the '09'
+              if ((this.selectionStart <= 2 && (event.key === 'Backspace' || event.key === 'Delete')) || 
+                  (this.selectionStart < 2 && event.key.length === 1)) {
+                event.preventDefault();
+              }
+            "
+          />
+          <p class="field-error">Enter a valid 11-digit contact number.</p>
         </div>
         <div class="field" id="field-password">
           <label for="password">Password</label>
           <input type="password" id="password" required minlength="6" placeholder="At least 6 characters" />
-          <p class="field-error">Password must be at least 6 characters.</p>
+
+          <ul id="password-requirements" style="list-style:none; padding:0; margin-top:8px; font-size:0.8rem; color:#666;">
+            <li id="req-length">✓ contains at least 8 characters</li>
+            <li id="req-case">✓ contains both lower (a-z) and upper case letters (A-Z)</li>
+            <li id="req-special">✓ contains at least one number (0-9) or a symbol</li>
+            <li id="req-email">✓ does not contain your email address</li>
+            <li id="req-common">✓ is not commonly used</li>
+          </ul>
+
+          <p class="field-error">Password must be at least 8 characters and meet all requirements.</p>
         </div>
         <div class="field" id="field-confirm">
           <label for="confirm">Confirm password</label>

@@ -18,6 +18,18 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.innerHTML = loading ? `<span class="spinner"></span> Please wait…` : label;
   }
 
+  // Password strength helper
+  function checkPasswordStrength(val, email) {
+    const emailPart = email.split('@')[0];
+    return {
+      length: val.length >= 8,
+      case: /[a-z]/.test(val) && /[A-Z]/.test(val),
+      special: /[0-9!@#$%^&*]/.test(val),
+      email: emailPart && !val.includes(emailPart),
+      common: val.length > 0 && val.toLowerCase() !== "password123"
+    };
+  }
+
   const loginForm = document.getElementById("login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
@@ -49,6 +61,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Password requirements UI feedback
+  const passwordInput = document.getElementById("password");
+  const emailInput = document.getElementById("email");
+
+  if (passwordInput) {
+    passwordInput.addEventListener("input", () => {
+      const strength = checkPasswordStrength(passwordInput.value, emailInput.value);
+      
+      document.getElementById("req-length").style.color = strength.length ? "#2d8a55" : "#666";
+      document.getElementById("req-case").style.color = strength.case ? "#2d8a55" : "#666";
+      document.getElementById("req-special").style.color = strength.special ? "#2d8a55" : "#666";
+      document.getElementById("req-email").style.color = strength.email ? "#2d8a55" : "#666";
+      document.getElementById("req-common").style.color = strength.common ? "#2d8a55" : "#666";
+    });
+  }
+
   const signupForm = document.getElementById("signup-form");
   if (signupForm) {
     signupForm.addEventListener("submit", async (e) => {
@@ -61,13 +89,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const terms = document.getElementById("terms").checked;
 
       const emailOk = /\S+@\S+\.\S+/.test(email);
+      const strength = checkPasswordStrength(password, email);
+      const isPasswordValid = Object.values(strength).every(Boolean);
+
       setError("field-name", !name);
       setError("field-email", !emailOk);
       setError("field-contact", !contact);
-      setError("field-password", password.length < 6);
+      setError("field-password", !isPasswordValid);
       setError("field-confirm", password !== confirm);
 
-      if (!name || !emailOk || !contact || password.length < 6 || password !== confirm) return;
+      if (!name || !emailOk || !contact || !isPasswordValid || password !== confirm) return;
       if (!terms) {
         GT.toast("Please agree to the Terms of Service to continue.", "error");
         return;

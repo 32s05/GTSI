@@ -1,3 +1,6 @@
+const dns = require('node:dns'); 
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -10,7 +13,6 @@ const DB = require('./data/store');
 require('dotenv').config();
 
 const connectDB = require('./config/db');
-
 
 // Set up EJS templating engine
 app.set('view engine', 'ejs');
@@ -111,7 +113,6 @@ app.get('/api/terminals', (req, res) => {
 });
 
 app.get('/api/routes', (req, res) => {
-    // Enrich routes with full origin and destination data objects for the UI tiles
     const detailedRoutes = DB.ROUTES.map(route => ({
         ...route,
         origin: DB.terminalByCode(route.originCode),

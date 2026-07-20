@@ -104,67 +104,35 @@ const GT = (() => {
   }
 
   function renderNav(activePage) {
-    const mount = document.getElementById("site-nav");
-    if (!mount) return;
-    const user = getUser();
+    const linksMount = document.getElementById("nav-links-container");
+    const actionsMount = document.getElementById("nav-actions-container");
+    const mobileMount = document.getElementById("mobile-menu");
+    if (!linksMount) return;
 
-    // Define base links
+    const user = getUser();
     let links = [
       { href: "index.ejs", label: "Home", key: "home" },
       { href: "booking.ejs", label: "Book a Trip", key: "booking" },
     ];
+    if (user) links.push({ href: "dashboard.ejs", label: "My Trips", key: "dashboard" });
 
-    if (user) {
-      links.push({ href: "dashboard.ejs", label: "My Trips", key: "dashboard" });
-    }
-
-    const linksHtml = links
-      .map(
-        (l) =>
-          `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`
-      )
-      .join("");
-
+    const linksHtml = links.map(l => `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`).join("");
     const actionsHtml = user
-      ? `<div class="nav-user">
-           <div class="avatar">${initials(user.name)}</div>
-           <span>${user.name.split(" ")[0]}</span>
-         </div>
-         <button class="btn btn-ghost btn-sm" id="nav-logout">Log out</button>`
-      : `<a href="login.ejs" class="btn btn-ghost btn-sm">Log in</a>
-         <a href="signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
+      ? `<div class="nav-user"><div class="avatar">${initials(user.name)}</div><span>${user.name.split(" ")[0]}</span></div><button class="btn btn-ghost btn-sm" id="nav-logout">Log out</button>`
+      : `<a href="login.ejs" class="btn btn-ghost btn-sm">Log in</a><a href="signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
 
-    mount.innerHTML = `
-      <nav class="navbar">
-        <div class="container">
-          <a href="index.ejs" class="brand">
-            <span class="brand-mark">
-              <img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" />
-            </span>
-            Genesis Transport
-          </a>
-          <div class="nav-links">${linksHtml}</div>
-          <div class="nav-actions">${actionsHtml}</div>
-          <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h18" stroke="#0B1E3D" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-      </nav>
-      <div id="mobile-menu" style="background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:none;">
-        ${links.map((l) => `<a href="${l.href}" style="display:block;padding:12px 0;font-weight:600;color:var(--navy-900);">${l.label}</a>`).join("")}
-        <div style="display:flex;gap:10px;margin-top:10px;">${actionsHtml}</div>
-      </div>
-    `;
+    // Update containers instead of replacing the whole navbar
+    linksMount.innerHTML = linksHtml;
+    actionsMount.innerHTML = actionsHtml;
+    mobileMount.innerHTML = `${links.map((l) => `<a href="${l.href}" style="display:block;padding:12px 0;font-weight:600;color:var(--navy-900);">${l.label}</a>`).join("")}<div style="display:flex;gap:10px;margin-top:10px;">${actionsHtml}</div>`;
 
+    // Re-attach listeners...
     document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      const m = document.getElementById("mobile-menu");
-      m.style.display = m.style.display === "block" ? "none" : "block";
+      mobileMount.style.display = mobileMount.style.display === "block" ? "none" : "block";
     });
-
     document.getElementById("nav-logout")?.addEventListener("click", () => {
       clearUser();
-      toast("Logged out.");
-      setTimeout(() => (location.href = "index.ejs"), 500);
+      location.href = "index.ejs";
     });
   }
 
@@ -180,7 +148,7 @@ const GT = (() => {
                 <img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" />
               </span>
               Genesis Transport
-            </div>
+            </div>  
             <p style="color:#8b96b5;">Peer-to-peer intercity bus booking for the Filipino commuter — built as a DLSU-D capstone project.</p>
           </div>
           <div>

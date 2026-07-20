@@ -152,8 +152,8 @@ button { font-family: inherit; }
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 50;
-  background: rgba(247, 247, 245, 0.85);
+  z-index: 1000;
+  background: rgba(247, 247, 245, 0.95);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
@@ -443,6 +443,9 @@ button { font-family: inherit; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .page-hero {
+  position: sticky;
+  top: 76px; 
+  z-index: 999;
   padding: 56px 0 40px;
   background: linear-gradient(180deg, var(--navy-950) 0%, var(--navy-900) 100%);
   color: #fff;
@@ -676,7 +679,12 @@ button { font-family: inherit; }
   gap: 28px;
   align-items: start;
 }
-.filters-panel { padding: 22px; position: sticky; top: 96px; }
+.filters-panel {
+  padding: 22px;
+  position: sticky;
+  top: 430px; /* Adjust this value to match (Navbar Height + Hero Height) */
+  align-self: start; /* Ensures it stays at the top of the grid cell */
+}
 .filter-types { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 .filter-types label {
   display: flex; align-items: center; gap: 10px;
