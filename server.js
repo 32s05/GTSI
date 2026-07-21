@@ -6,9 +6,11 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// Import your custom in-memory store
+// Import DB
 const User = require('./models/User');
 const Booking = require('./models/Booking');
+const Terminal = require('./models/Terminal');
+const Route = require('./models/Route');
 const DB = require('./data/store');
 require('dotenv').config();
 
@@ -108,56 +110,91 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // --- TERMINALS & ROUTES APIs ---
-app.get('/api/terminals', (req, res) => {
-    res.json({ terminals: DB.TERMINALS });
+app.get('/api/terminals', async (req, res) => {
+    try {
+        const terminals = await Terminal.find({});
+        res.json({ terminals });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.get('/api/routes', (req, res) => {
-    const detailedRoutes = DB.ROUTES.map(route => ({
-        ...route,
-        origin: DB.terminalByCode(route.originCode),
-        destination: DB.terminalByCode(route.destCode)
-    }));
-    res.json({ routes: detailedRoutes });
+app.get('/api/routes', async (req, res) => {
+    try {
+        const routes = await Route.find({});
+        
+        // Enrich routes with their respective origin and destination terminal documents
+        const terminals = await Terminal.find({});
+        const terminalMap = {};
+        terminals.forEach(t => { terminalMap[t.code] = t; });
+
+        const detailedRoutes = routes.map(route => {
+            const routeObj = route.toObject();
+            return {
+                ...routeObj,
+                origin: terminalMap[route.originCode] || null,
+                destination: terminalMap[route.destCode] || null
+            };
+        });
+
+        res.json({ routes: detailedRoutes });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- TRIP SEARCH & SEATS ---
-app.get('/api/trips/search', (req, res) => {
-    const { from, to, date } = req.query;
-    
-    // Look for a route matching the requested origin and destination codes
-    const activeRoute = DB.ROUTES.find(r => r.originCode === from && r.destCode === to);
-    
-    if (!activeRoute) {
-        return res.json({ route: null, trips: [] });
+app.get('/api/trips/search', async (req, res) => {
+    try {
+        const { from, to, date } = req.query;
+        
+        // Find the active route from MongoDB
+        const activeRoute = await Route.findOne({ originCode: from, destCode: to });
+        
+        if (!activeRoute) {
+            return res.json({ route: null, trips: [] });
+        }
+
+        const originTerminal = await Terminal.findOne({ code: activeRoute.originCode });
+        const destTerminal = await Terminal.findOne({ code: activeRoute.destCode });
+
+        const detailedRoute = {
+            ...activeRoute.toObject(),
+            origin: originTerminal,
+            destination: destTerminal
+        };
+
+        // DB.buildTrips can still use the route's string ID and date generation logic
+        const generatedTrips = DB.buildTrips(activeRoute.id, date);
+        res.json({ route: detailedRoute, trips: generatedTrips });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    const detailedRoute = {
-        ...activeRoute,
-        origin: DB.terminalByCode(activeRoute.originCode),
-        destination: DB.terminalByCode(activeRoute.destCode)
-    };
-
-    // Build the dynamic trips for that route and date using the store logic
-    const generatedTrips = DB.buildTrips(activeRoute.id, date);
-    res.json({ route: detailedRoute, trips: generatedTrips });
 });
 
-app.get('/api/trips/:tripId/seats', (req, res) => {
-    const { tripId } = req.params;
-    const { routeId, date } = req.query;
+app.get('/api/trips/:tripId/seats', async (req, res) => {
+    try {
+        const { tripId } = req.params;
+        const { routeId, date } = req.query;
 
-    // Regenerate the specific trip instance parameters
-    const dayTrips = DB.buildTrips(routeId, date);
-    const specificTrip = dayTrips.find(t => t.id === tripId);
+        // Verify route exists in DB first to ensure integrity
+        const activeRoute = await Route.findOne({ id: routeId });
+        if (!activeRoute) {
+            return res.status(404).json({ error: "Route configuration not found." });
+        }
 
-    if (!specificTrip) {
-        return res.status(404).json({ error: "Trip schedule could not be found." });
+        const dayTrips = DB.buildTrips(routeId, date);
+        const specificTrip = dayTrips.find(t => t.id === tripId);
+
+        if (!specificTrip) {
+            return res.status(404).json({ error: "Trip schedule could not be found." });
+        }
+
+        const matrix = DB.seatLayoutFor(specificTrip);
+        res.json({ seats: matrix });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    // Get the matrix of seats mapping out dynamic layout statuses
-    const matrix = DB.seatLayoutFor(specificTrip);
-    res.json({ seats: matrix });
 });
 
 // --- BOOKINGS ENGINE ---

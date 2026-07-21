@@ -104,6 +104,35 @@ const GT = (() => {
     return user;
   }
 
+  // 10-Minute Inactivity Logout Feature
+  function initInactivityTimer() {
+    let inactivityTimer;
+    const timeoutLimit = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+    function resetTimer() {
+      clearTimeout(inactivityTimer);
+      // Only monitor idle state if a user is actively logged in
+      if (getUser()) {
+        inactivityTimer = setTimeout(() => {
+          clearUser();
+          toast("You have been logged out due to inactivity.", "default");
+          setTimeout(() => {
+            location.href = "/login.ejs";
+          }, 1500); // Give user a moment to see the toast notification
+        }, timeoutLimit);
+      }
+    }
+
+    // Monitor common user interaction events across the page
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keypress", resetTimer);
+    window.addEventListener("click", resetTimer);
+    window.addEventListener("scroll", resetTimer);
+
+    // Initial check on load
+    resetTimer();
+  }
+
   function renderNav(activePage) {
     let mount = document.getElementById("site-nav");
     if (!mount) {
@@ -210,7 +239,9 @@ const GT = (() => {
     const pageKey = path.split(".")[0] || "home";
     
     GT.renderNav(pageKey);
-    GT.renderFooter(); // You likely want this on all pages too
+    GT.renderFooter(); 
+    
+    initInactivityTimer();
   });
 
   return {

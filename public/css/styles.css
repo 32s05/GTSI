@@ -706,7 +706,7 @@ button { font-family: inherit; }
 .filters-panel {
   padding: 22px;
   position: sticky;
-  top: 430px; /* Adjust this value to match (Navbar Height + Hero Height) */
+  top: 390px; /* Adjust this value to match (Navbar Height + Hero Height) */
   align-self: start; /* Ensures it stays at the top of the grid cell */
 }
 .filter-types { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
