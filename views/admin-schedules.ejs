@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Schedules - Genesis Transport Admin</title>
+  <link rel="icon" type="image/png" href="/css/genesis-logo.png">
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main class="admin-shell">
+    <section class="admin-hero card">
+      <div class="admin-hero-copy">
+        <span class="eyebrow">Schedule management</span>
+        <h1>Plan and control departure trips.</h1>
+        <p class="muted">Create, update, or cancel specific trips for existing routes from a dedicated operations view.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn btn-primary" id="open-schedule-modal-btn">+ Add New Schedule</button>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="admin-page-heading">
+        <div>
+          <h2>Manage Schedules</h2>
+          <p class="muted">Keep service departures organized, visible, and easy to adjust.</p>
+        </div>
+        <input type="text" id="schedule-search-input" placeholder="Search by route, date, or plate..." style="width: 280px; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; font-family: var(--font-body);" />
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Date</th>
+              <th>Departure</th>
+              <th>Plate #</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="schedules-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / Edit Schedule Modal (Two Columns) -->
+  <div id="schedule-modal" class="modal hide">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="flex-between">
+        <h3 id="schedule-modal-title">Add New Schedule</h3>
+        <button class="btn btn-ghost btn-sm" id="close-schedule-modal-btn">&times;</button>
+      </div>
+      <form id="schedule-form" class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <input type="hidden" id="schedule-edit-id" />
+        
+        <div class="field" style="grid-column: span 2;">
+          <label for="schedule-route">Route</label>
+          <select id="schedule-route" required></select>
+        </div>
+        <div class="field">
+          <label for="schedule-date">Departure Date</label>
+          <input type="date" id="schedule-date" required />
+        </div>
+        <div class="field">
+          <label for="schedule-departure-time">Departure Time</label>
+          <select id="schedule-departure-time" required>
+            <option value="">Select Departure Time</option>
+            <option value="04:00 AM">04:00 AM</option>
+            <option value="05:00 AM">05:00 AM</option>
+            <option value="06:00 AM">06:00 AM</option>
+            <option value="07:00 AM">07:00 AM</option>
+            <option value="08:00 AM">08:00 AM</option>
+            <option value="09:00 AM">09:00 AM</option>
+            <option value="10:00 AM">10:00 AM</option>
+            <option value="11:00 AM">11:00 AM</option>
+            <option value="12:00 PM">12:00 PM</option>
+            <option value="01:00 PM">01:00 PM</option>
+            <option value="02:00 PM">02:00 PM</option>
+            <option value="03:00 PM">03:00 PM</option>
+            <option value="04:00 PM">04:00 PM</option>
+            <option value="05:00 PM">05:00 PM</option>
+            <option value="06:00 PM">06:00 PM</option>
+            <option value="07:00 PM">07:00 PM</option>
+            <option value="08:00 PM">08:00 PM</option>
+            <option value="09:00 PM">09:00 PM</option>
+            <option value="10:00 PM">10:00 PM</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="schedule-duration">Duration (Minutes)</label>
+          <input type="number" id="schedule-duration" min="1" value="120" required />
+        </div>
+        <div class="field">
+          <label for="schedule-arrival-time">Estimated Arrival Time (Auto)</label>
+          <input type="text" id="schedule-arrival-time" readonly placeholder="Calculated automatically" />
+        </div>
+        <div class="field">
+          <label for="schedule-bus-type">Bus Type</label>
+          <select id="schedule-bus-type"></select>
+        </div>
+        <div class="field">
+          <label for="schedule-plate-number">Plate Number</label>
+          <input type="text" id="schedule-plate-number" placeholder="GTI-1234" required />
+        </div>
+        <div class="field">
+          <label for="schedule-seats">Seats</label>
+          <input type="number" id="schedule-seats" required min="1" value="40" />
+        </div>
+        <div class="field">
+          <label for="schedule-status">Status</label>
+          <select id="schedule-status">
+            <option value="active">Active</option>
+            <option value="delayed">Delayed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="submit" class="btn btn-primary" id="schedule-submit-btn">Save Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- View Details Modal -->
+  <div id="schedule-details-modal" class="modal hide">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="flex-between">
+        <h3>Schedule Details</h3>
+        <button class="btn btn-ghost btn-sm" id="close-details-modal-btn">&times;</button>
+      </div>
+      <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div class="field" style="grid-column: span 2;">
+          <label><strong>System Auto-Generated Trip ID</strong></label>
+          <input type="text" id="detail-schedule-id" readonly style="background: #f4f4f4; font-family: monospace;" />
+        </div>
+        <div class="field">
+          <label>Route</label>
+          <input type="text" id="detail-schedule-route" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field">
+          <label>Departure Date</label>
+          <input type="text" id="detail-schedule-date" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field">
+          <label>Departure Time</label>
+          <input type="text" id="detail-schedule-departure" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field">
+          <label>Arrival Time</label>
+          <input type="text" id="detail-schedule-arrival" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field">
+          <label>Bus Type & Plate</label>
+          <input type="text" id="detail-schedule-bus" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field">
+          <label>Available Seats</label>
+          <input type="text" id="detail-schedule-seats" readonly style="background: #f4f4f4;" />
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <label>Status</label>
+          <input type="text" id="detail-schedule-status" readonly style="background: #f4f4f4; text-transform: uppercase;" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast"></div>
+
+  <script>
+    window.BUS_TYPES = <%= JSON.stringify(typeof busTypes !== 'undefined' ? busTypes : (typeof busTypeOptions !== 'undefined' ? busTypeOptions : [])) %>;
+  </script>
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

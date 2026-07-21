@@ -49,11 +49,18 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           body: JSON.stringify({ email, password }),
         });
+
         GT.setUser(user);
         GT.toast(`Welcome back, ${user.name.split(" ")[0]}!`, "success");
-        const redirect = sessionStorage.getItem("gt_redirect_after_login") || "dashboard.ejs";
+        
+        // Smart routing: Send admins to admin.ejs, regular users to dashboard.ejs
+        let redirect = sessionStorage.getItem("gt_redirect_after_login");
+        if (!redirect) {
+            redirect = (user.role === "admin") ? "admin.ejs" : "dashboard.ejs";
+        }
         sessionStorage.removeItem("gt_redirect_after_login");
         setTimeout(() => (location.href = redirect), 500);
+        
       } catch (err) {
         GT.toast(err.message, "error");
         setLoading(btn, false, "Log in");

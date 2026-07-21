@@ -18,28 +18,114 @@ document.addEventListener("DOMContentLoaded", async () => {
   dateInput.value = params.get("date") || today;
 
   let terminals = [];
+  let routes = [];
   let currentRoute = null;
   let currentTrips = [];
   let activeTypeFilters = new Set();
+
+  // Fetch routes to filter destinations
+  async function fetchRoutes() {
+    try {
+      const { routes: r } = await GT.api("/api/routes");
+      routes = r || [];
+    } catch (err) {
+      console.error("Failed to fetch routes:", err);
+    }
+  }
+
+  // Update destination options based on selected origin
+  function updateDestinationOptions() {
+    const selectedOrigin = fromSelect.value;
+    const availableDestinations = [...new Set(routes.filter(r => r.originCode === selectedOrigin).map(r => r.destCode))];
+    
+    const toValue = toSelect.value;
+    toSelect.innerHTML = terminals
+      .filter(t => availableDestinations.includes(t.code))
+      .map((x) => `<option value="${x.code}">${x.name}</option>`)
+      .join("");
+
+    // If the previously selected destination is still available, keep it. Otherwise, select the first one.
+    if (toSelect.options.length > 0) {
+      if (Array.from(toSelect.options).some(opt => opt.value === toValue)) {
+        toSelect.value = toValue;
+      } else {
+        toSelect.value = toSelect.options[0]?.value || "";
+      }
+    }
+  }
+
+  // Display all available schedules
+  async function displayAllSchedules() {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const { route, trips: allTrips } = await GT.api(`/api/trips/search?from=${fromSelect.value}&to=${toSelect.value}&date=${today}`);
+      currentRoute = route;
+      currentTrips = allTrips || [];
+      activeTypeFilters = new Set(currentTrips.map((t) => t.busType));
+      renderFilters();
+      renderResults();
+    } catch (err) {
+      console.error("Failed to load schedules:", err);
+    }
+  }
+
+  // Fetch alternative trips when no results found
+  async function fetchAlternativeTrips() {
+    try {
+      const allSchedules = [];
+      for (const origin of terminals) {
+        for (const dest of terminals) {
+          if (origin.code !== dest.code) {
+            try {
+              const today = new Date().toISOString().slice(0, 10);
+              const { trips: trips } = await GT.api(`/api/trips/search?from=${origin.code}&to=${dest.code}&date=${today}`);
+              allSchedules.push(...(trips || []));
+            } catch (e) {
+              // Skip on error
+            }
+          }
+        }
+      }
+      return allSchedules;
+    } catch (err) {
+      console.error("Failed to fetch alternatives:", err);
+      return [];
+    }
+  }
 
   try {
     const { terminals: t } = await GT.api("/api/terminals");
     terminals = t;
     fromSelect.innerHTML = terminals.map((x) => `<option value="${x.code}">${x.name}</option>`).join("");
-    toSelect.innerHTML = terminals.map((x) => `<option value="${x.code}">${x.name}</option>`).join("");
+
+    await fetchRoutes();
 
     fromSelect.value = params.get("from") || terminals[0].code;
-    toSelect.value = params.get("to") || terminals[1].code;
+    updateDestinationOptions();
+    toSelect.value = params.get("to") || toSelect.options[0]?.value || terminals[1].code;
 
-    await runSearch();
+    // Display all schedules on page load
+    await displayAllSchedules();
   } catch (err) {
     GT.toast(err.message, "error");
   }
+
+  // Filter destinations when origin changes
+  fromSelect.addEventListener("change", () => {
+    updateDestinationOptions();
+    displayAllSchedules();
+  });
+
+  toSelect.addEventListener("change", () => {
+    displayAllSchedules();
+  });
 
   document.getElementById("swap").addEventListener("click", () => {
     const tmp = fromSelect.value;
     fromSelect.value = toSelect.value;
     toSelect.value = tmp;
+    updateDestinationOptions();
+    displayAllSchedules();
   });
 
   document.getElementById("search-form").addEventListener("submit", (e) => {
@@ -118,6 +204,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     resultsSummary.innerHTML = `<strong>${trips.length} trip${trips.length === 1 ? "" : "s"}</strong> from ${currentRoute.origin.name} to ${currentRoute.destination.name} · ${GT.formatDateLong(dateInput.value)}`;
 
     if (!trips.length) {
+      // Show no results message with alternative trips
       resultsContainer.innerHTML = `
         <div class="empty-state">
           <div class="icon">
@@ -125,7 +212,79 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>
           <h3>No trips match your filters</h3>
           <p>Try a different bus type, fewer passengers, or another date.</p>
+          <button class="btn btn-secondary" id="show-alternatives-btn" style="margin-top: 1rem;">Show other available trips</button>
         </div>`;
+      
+      // Add click handler to show alternatives
+      document.getElementById("show-alternatives-btn")?.addEventListener("click", async () => {
+        resultsContainer.innerHTML = `<div class="empty-state">Loading alternative trips…</div>`;
+        const altTrips = await fetchAlternativeTrips();
+        const passengers = Number(passengersSelect.value);
+        const filtered = altTrips
+          .filter((t) => t.seatsAvailable >= passengers)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 5);
+        
+        if (!filtered.length) {
+          resultsContainer.innerHTML = `
+            <div class="empty-state">
+              <h3>No alternative trips available</h3>
+              <p>Sorry, there are currently no other trips with available seats.</p>
+            </div>`;
+          return;
+        }
+
+        resultsSummary.innerHTML = `<strong>Other available trips</strong> · Would you like to book one of these instead?`;
+        
+        resultsContainer.innerHTML = filtered
+          .map((trip) => {
+            const seatsLow = trip.seatsAvailable <= 6;
+            const routeName = `${trip.routeId || '—'}`;
+            return `
+          <div class="trip-card">
+            <div>
+              <div class="trip-times">
+                <div>
+                  <div class="time">${trip.departure}</div>
+                  <div class="place">${routeName}</div>
+                </div>
+                <div class="mid">
+                  <div class="dur">${GT.formatDurationMins(trip.durationMins)}</div>
+                  <div class="route-line"><span class="stop"></span><span class="track"></span><span class="stop end"></span></div>
+                </div>
+                <div>
+                  <div class="time">${trip.arrival}</div>
+                  <div class="place"></div>
+                </div>
+              </div>
+              <div class="trip-meta">
+                <span class="badge badge-gold">${trip.busType}</span>
+                <span class="badge ${seatsLow ? "badge-warning" : "badge-navy"}">${trip.seatsAvailable} seats left</span>
+                <span class="badge" style="background:var(--surface-alt);color:var(--muted);">Plate ${trip.plate}</span>
+              </div>
+            </div>
+            <div class="trip-action">
+              <div class="price">${GT.peso(trip.price)}</div>
+              <div class="per-seat">per seat</div>
+              <button class="btn btn-navy btn-sm select-alt-trip" data-trip-id="${trip.id}" data-trip-data='${JSON.stringify(trip)}'>Select</button>
+            </div>
+          </div>`;
+          })
+          .join("");
+
+        resultsContainer.querySelectorAll(".select-alt-trip").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const trip = JSON.parse(btn.dataset.tripData);
+            GT.setDraft({
+              route: { origin: { name: "Various" }, destination: { name: "Various" } },
+              trip,
+              date: dateInput.value,
+              passengers,
+            });
+            location.href = "seats.ejs";
+          });
+        });
+      });
       return;
     }
 

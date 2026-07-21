@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All System Bookings - Genesis Transport Admin</title>
+  <link rel="icon" type="image/png" href="/css/genesis-logo.png">
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main class="admin-shell">
+    <section class="admin-hero card">
+      <div class="admin-hero-copy">
+        <span class="eyebrow">Booking oversight</span>
+        <h1>Review the operating heartbeat.</h1>
+        <p class="muted">Track all passenger bookings and their current status from a dedicated monitoring page.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn btn-primary" id="download-bookings-btn">Download bookings report</button>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="admin-page-heading">
+        <div>
+          <h2>All System Bookings</h2>
+          <p class="muted">Monitor reservations and current booking statuses.</p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Trip ID</th>
+              <th>Seats</th>
+              <th>Total Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="bookings-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast"></div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

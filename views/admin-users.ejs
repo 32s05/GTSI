@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Users - Genesis Transport Admin</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main class="admin-shell">
+    <section class="admin-hero card">
+      <div class="admin-hero-copy">
+        <span class="eyebrow">User management</span>
+        <h1>Maintain passenger and admin accounts.</h1>
+        <p class="muted">Create, edit, and remove user accounts from a dedicated administration workspace.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn btn-primary" id="open-user-modal-btn">+ Add New User</button>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="admin-page-heading">
+        <div>
+          <h2>Manage Users</h2>
+          <p class="muted">Oversee account access and account roles.</p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Contact</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="user-modal" class="modal hide">
+    <div class="modal-content">
+      <div class="flex-between">
+        <h3 id="user-modal-title">Add New User</h3>
+        <button class="btn btn-ghost btn-sm" id="close-user-modal-btn">&times;</button>
+      </div>
+      <form id="user-form" class="form-grid">
+        <input type="hidden" id="user-edit-id" />
+        <div class="field">
+          <label for="user-name">Name</label>
+          <input type="text" id="user-name" required placeholder="Juan dela Cruz" />
+        </div>
+        <div class="field">
+          <label for="user-email">Email</label>
+          <input type="email" id="user-email" required placeholder="juan@email.com" />
+        </div>
+        <div class="field">
+          <label for="user-contact">Contact</label>
+          <input type="text" id="user-contact" required placeholder="09171234567" />
+        </div>
+        <div class="field">
+          <label for="user-password">Password</label>
+          <input type="password" id="user-password" placeholder="Leave blank to keep existing" />
+        </div>
+        <div class="field">
+          <label for="user-role">Role</label>
+          <select id="user-role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary mt-8" id="user-submit-btn">Save User</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast"></div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

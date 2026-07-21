@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Genesis Transport</title>
+    <link rel="icon" type="image/png" href="/css/genesis-logo.png">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div id="site-nav"></div>
+
+    <main class="admin-shell">
+        <section class="admin-hero card">
+            <div class="admin-hero-copy">
+                <span class="eyebrow" id="live-ticker">Loading live time…</span>
+                <h1>Monitor the system at a glance.</h1>
+                <p class="muted">Review performance, revenue, bookings, and network health from a dedicated dashboard view.</p>
+            </div>
+            <div class="admin-hero-actions">
+                <a href="/admin-routes.ejs" class="btn btn-primary">Manage routes</a>
+            </div>
+        </section>
+
+        <section class="stats-grid admin-stats-grid" id="admin-stats-grid"></section>
+
+        <section class="admin-panel">
+            <div class="admin-page-heading">
+                <div>
+                    <h2>Performance insights</h2>
+                    <p class="muted">Track booking momentum and service health with lightweight visual summaries.</p>
+                </div>
+            </div>
+            <div id="dashboard-visuals" class="dashboard-visuals"></div>
+        </section>
+    </main>
+
+    <div class="toast"></div>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

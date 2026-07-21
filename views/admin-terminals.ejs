@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Terminals - Genesis Transport Admin</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main class="admin-shell">
+    <section class="admin-hero card">
+      <div class="admin-hero-copy">
+        <span class="eyebrow">Terminal management</span>
+        <h1>Keep station records accurate.</h1>
+        <p class="muted">Manage terminal codes, names, and regions from a dedicated operations view.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn btn-primary" id="open-terminal-modal-btn">+ Add New Terminal</button>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="admin-page-heading">
+        <div>
+          <h2>Manage Terminals</h2>
+          <p class="muted">Update the network of operating stations.</p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Station Name</th>
+              <th>Region</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="terminals-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="terminal-modal" class="modal hide">
+    <div class="modal-content">
+      <div class="flex-between">
+        <h3 id="terminal-modal-title">Add New Terminal</h3>
+        <button class="btn btn-ghost btn-sm" id="close-terminal-modal-btn">&times;</button>
+      </div>
+      <form id="terminal-form" class="form-grid">
+        <input type="hidden" id="terminal-edit-id" />
+        <div class="field">
+          <label for="terminal-code">Terminal Code</label>
+          <input type="text" id="terminal-code" required placeholder="CVT" />
+        </div>
+        <div class="field">
+          <label for="terminal-name">Station Name</label>
+          <input type="text" id="terminal-name" required placeholder="Cavite Terminal" />
+        </div>
+        <div class="field">
+          <label for="terminal-region">Region</label>
+          <input type="text" id="terminal-region" required placeholder="Cavite" />
+        </div>
+        <button type="submit" class="btn btn-primary mt-8" id="terminal-submit-btn">Save Terminal</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast"></div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

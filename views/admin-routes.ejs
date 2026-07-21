@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Routes - Genesis Transport Admin</title>
+  <link rel="icon" type="image/png" href="/css/genesis-logo.png">
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div id="site-nav"></div>
+
+  <main class="admin-shell">
+    <section class="admin-hero card">
+      <div class="admin-hero-copy">
+        <span class="eyebrow">Route management</span>
+        <h1>Build and maintain the network.</h1>
+        <p class="muted">Create, update, and remove routes with a cleaner admin workflow designed for daily operations.</p>
+      </div>
+      <div class="admin-hero-actions">
+        <button class="btn btn-primary" id="open-route-modal-btn">+ Add New Route</button>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <div class="admin-page-heading">
+        <div>
+          <h2>Manage Routes</h2>
+          <p class="muted">Control the available intercity connections and fares.</p>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Route ID</th>
+              <th>Origin Code</th>
+              <th>Destination Code</th>
+              <th>Duration (Mins)</th>
+              <th>Base Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="routes-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="route-modal" class="modal hide">
+    <div class="modal-content">
+      <div class="flex-between">
+        <h3 id="route-modal-title">Add New Route</h3>
+        <button class="btn btn-ghost btn-sm" id="close-modal-btn">&times;</button>
+      </div>
+      <form id="route-form" class="form-grid">
+        <input type="hidden" id="route-edit-id" />
+        <div class="field">
+          <label for="route-id">Route ID</label>
+          <input type="text" id="route-id" readonly placeholder="Auto-generated" />
+        </div>
+        <div class="field">
+          <label for="origin-code">Origin Terminal</label>
+          <select id="origin-code" required></select>
+        </div>
+        <div class="field">
+          <label for="dest-code">Destination Terminal</label>
+          <select id="dest-code" required></select>
+        </div>
+        <div class="field">
+          <label for="duration">Duration (Minutes)</label>
+          <input type="number" id="duration" required placeholder="120" min="1" />
+        </div>
+        <div class="field">
+          <label for="base-price">Base Price (₱)</label>
+          <input type="number" id="base-price" required placeholder="250" min="0" step="0.01" />
+        </div>
+        <button type="submit" class="btn btn-primary mt-8" id="route-submit-btn">Save Route</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast"></div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

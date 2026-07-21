@@ -133,6 +133,24 @@ const GT = (() => {
     resetTimer();
   }
 
+  function resolveActivePage(activePage) {
+    const path = window.location.pathname.split("/").pop()?.toLowerCase() || "";
+    const pageName = path.split(".")[0] || "home";
+    const pageMap = {
+      admin: "admin",
+      "admin-routes": "routes",
+      "admin-terminals": "terminals",
+      "admin-users": "users",
+      "admin-schedules": "schedules",
+      "admin-bookings": "bookings",
+      dashboard: "dashboard",
+      checkout: "booking",
+      seats: "booking",
+      booking: "booking",
+    };
+    return pageMap[pageName] || activePage || pageName || "home";
+  }
+
   function renderNav(activePage) {
     let mount = document.getElementById("site-nav");
     if (!mount) {
@@ -142,16 +160,21 @@ const GT = (() => {
     }
     if (!mount) return;
 
+    // Reuse the page's existing mount point instead of creating a second navbar container.
+    mount.innerHTML = "";
+
+    const resolvedActivePage = resolveActivePage(activePage);
+
     mount.innerHTML = `
       <nav class="navbar">
         <div class="container">
           <a href="/index.ejs" class="brand"><span class="brand-mark"><img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" /></span>Genesis Transport</a>
           <div class="nav-links" id="nav-links-container"></div>
           <div class="nav-actions" id="nav-actions-container"></div>
-          <button class="nav-toggle" id="nav-toggle">Menu</button>
+          <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">☰</button>
         </div>
       </nav>
-      <div id="mobile-menu" style="background:#fff;border-bottom:1px solid var(--border);padding:16px 24px;display:none;"></div>
+      <div id="mobile-menu"></div>
     `;
 
     const linksMount = document.getElementById("nav-links-container");
@@ -160,28 +183,71 @@ const GT = (() => {
     if (!linksMount) return;
 
     const user = getUser();
-    let links = [
-      { href: "/index.ejs", label: "Home", key: "home" },
-      { href: "/booking.ejs", label: "Book a Trip", key: "booking" },
-    ];
-    if (user) links.push({ href: "/dashboard.ejs", label: "My Trips", key: "dashboard" });
+    const isAdminPage = window.location.pathname.includes("admin") || resolvedActivePage === "admin" || ["routes", "terminals", "users", "bookings"].includes(resolvedActivePage);
+    let links = [];
 
-    const linksHtml = links.map(l => `<a href="${l.href}" class="${l.key === activePage ? "active" : ""}">${l.label}</a>`).join("");
+    if (isAdminPage) {
+      links = [
+        { href: "/admin.ejs", label: "Dashboard", key: "admin" },
+        {
+          href: "#",
+          label: "Manage",
+          key: "manage",
+          dropdown: [
+            { href: "/admin-routes.ejs", label: "Routes", key: "routes" },
+            { href: "/admin-terminals.ejs", label: "Terminals", key: "terminals" },
+            { href: "/admin-users.ejs", label: "Users", key: "users" },
+            { href: "/admin-schedules.ejs", label: "Schedules", key: "schedules" }
+          ]
+        },
+        { href: "/admin-bookings.ejs", label: "Bookings", key: "bookings" }
+      ];
+    } else {
+      links = [
+        { href: "/index.ejs", label: "Home", key: "home" },
+        { href: "/booking.ejs", label: "Book a Trip", key: "booking" },
+      ];
+      if (user) links.push({ href: "/dashboard.ejs", label: "My Trips", key: "dashboard" });
+    }
+
+    const isManageActive = ["manage", "routes", "terminals", "users", "schedules"].includes(resolvedActivePage);
+
+    const linksHtml = links.map((l) => {
+      if (l.dropdown) {
+        return `
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-toggle ${isManageActive ? "active" : ""}">${l.label}</button>
+            <div class="nav-dropdown-menu">
+              ${l.dropdown.map((item) => `<a href="${item.href}" class="${resolvedActivePage === item.key ? "active" : ""}">${item.label}</a>`).join("")}
+            </div>
+          </div>
+        `;
+      }
+      return `<a href="${l.href}" class="${resolvedActivePage === l.key ? "active" : ""}">${l.label}</a>`;
+    }).join("");
     const actionsHtml = user
       ? `<div class="nav-user"><div class="avatar">${initials(user.name)}</div><span>${user.name.split(" ")[0]}</span></div><button class="btn btn-ghost btn-sm nav-logout">Log out</button>`
       : `<a href="/login.ejs" class="btn btn-ghost btn-sm">Log in</a><a href="/signup.ejs" class="btn btn-primary btn-sm">Sign up</a>`;
 
-    // Update containers instead of replacing the whole navbar
     linksMount.innerHTML = linksHtml;
     actionsMount.innerHTML = actionsHtml;
-    mobileMount.innerHTML = `${links.map((l) => `<a href="${l.href}" style="display:block;padding:12px 0;font-weight:600;color:var(--navy-900);">${l.label}</a>`).join("")}<div style="display:flex;gap:10px;margin-top:10px;">${actionsHtml}</div>`;
+    mobileMount.innerHTML = `${links.map((l) => {
+      if (l.dropdown) {
+        return `<div class="mobile-nav-group">
+          <div class="mobile-nav-label">${l.label}</div>
+          ${l.dropdown.map((item) => `<a href="${item.href}" class="mobile-nav-link ${resolvedActivePage === item.key ? "active" : ""}">${item.label}</a>`).join("")}
+        </div>`;
+      }
+      return `<a href="${l.href}" class="mobile-nav-link ${resolvedActivePage === l.key ? "active" : ""}">${l.label}</a>`;
+    }).join("")}<div class="mobile-nav-actions">${actionsHtml}</div>`;
 
-    // Re-attach listeners...
-    document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      mobileMount.style.display = mobileMount.style.display === "block" ? "none" : "block";
+    const toggle = document.getElementById("nav-toggle");
+    toggle?.addEventListener("click", () => {
+      const isOpen = mobileMount.style.display === "block";
+      mobileMount.style.display = isOpen ? "none" : "block";
+      toggle.setAttribute("aria-expanded", String(!isOpen));
     });
 
-    // Attach logout handlers to any logout buttons (desktop + mobile)
     document.querySelectorAll('.nav-logout').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.preventDefault();

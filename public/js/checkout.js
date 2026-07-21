@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
           userId: user.id,
           tripId: trip.id,
           routeId: route.id,
-          trip,
+          trip: { ...trip, date },
           seats,
           passengers,
           paymentMethod,
