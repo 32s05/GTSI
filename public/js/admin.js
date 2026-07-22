@@ -640,18 +640,21 @@ async function loadAdminData(user) {
         <div class="stat-meta">All passenger reservations</div>
       </a>
       <article class="stat-card stat-card--revenue">
-        <div class="stat-card-top">
-          <div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><path d="M7 8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm10 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg></div>
-          <span class="stat-chip stat-chip--gold">Revenue</span>
-          <button class="icon-btn revenue-report-btn" type="button" aria-label="Generate revenue report"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10M12 13l4-4M12 13l-4-4M5 19h14"/></svg></button>
+        <div class="stat-card-top" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><path d="M7 8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm10 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/></svg></div>
+            <span class="stat-chip stat-chip--gold">Revenue</span>
+          </div>
         </div>
-        <div class="stat-value">${GT.peso(totalRevenue)}</div>
-        <div class="stat-label">Confirmed revenue</div>
-        <div class="stat-meta">Revenue from active bookings</div>
-        <div class="stat-report-status" id="revenue-report-status">Download CSV report</div>
-        <div class="revenue-bars">
-          ${trend.slice(-4).map((item) => `<div class="revenue-bar-group"><div class="revenue-bar-track"><div class="revenue-bar-fill" style="height:${Math.max((item.value / maxTrend) * 100, 10)}%"></div></div><span>${item.label}</span></div>`).join("")}
-        </div>
+
+        <div class="stat-value" style="margin-top: 1.25rem; font-size: 4rem; text-align: center; font-weight: 700;">${GT.peso(Number(totalRevenue).toFixed(2))}</div>
+        <div class="stat-label" style="text-align: center;">Confirmed total revenue</div>
+
+        <button class="btn btn-ghost btn-sm revenue-report-btn" type="button" style="display: inline-flex; width: fit-content; align-items: right !important; gap: 0.45rem; padding: 0.4rem 0.75rem; font-size: 0.825rem; font-weight: 500; border-radius: 6px; border: 1px solid rgba(0, 0, 0, 0.08); background-color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(4px); transition: all 0.2s ease;" aria-label="Download CSV report">
+          <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px; opacity: 0.7;"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v10m0 0l4-4m-4 4l-4-4M5 19h14"/></svg>
+          <span class="stat-report-status" id="revenue-report-status">Download CSV</span>
+        </button>
+
       </article>
     `;
 
@@ -834,24 +837,35 @@ function generateRevenueReport(bookings) {
   const confirmedBookings = bookings.filter((booking) => booking.status !== "cancelled").length;
   const cancelledBookings = bookings.filter((booking) => booking.status === "cancelled").length;
 
+  // Find max price for relative scaling in the text-based chart column
+  const maxPrice = Math.max(...bookings.map(b => Number(b.totalPrice) || 0), 1);
+
   const csvRows = [
-    ["Genesis Transport Revenue Report"],
+    ["=== GENESIS TRANSPORT REVENUE & ANALYTICS REPORT ==="],
     ["Generated At", generatedAt],
     ["Total Bookings", bookings.length],
     ["Confirmed Bookings", confirmedBookings],
     ["Cancelled Bookings", cancelledBookings],
-    ["Total Revenue", totalRevenue],
+    ["Total Revenue (PHP)", totalRevenue],
     [],
-    ["Booking ID", "Trip ID", "Seats", "Total Price", "Status"]
+    ["Booking ID", "Trip ID", "Seats", "Total Price (PHP)", "Status", "Visual Share Indicator"]
   ];
 
   bookings.forEach((booking) => {
+    const price = Number(booking.totalPrice) || 0;
+    // Generate a simple 10-block ASCII chart indicator based on relative price value
+    const percentage = Math.min(Math.max(price / maxPrice, 0), 1);
+    const filledBlocks = Math.round(percentage * 10);
+    const emptyBlocks = 10 - filledBlocks;
+    const visualBar = `[${"█".repeat(filledBlocks)}${"░".repeat(emptyBlocks)}]`;
+
     csvRows.push([
       booking._id || "",
       booking.tripId || "",
       Array.isArray(booking.seats) ? booking.seats.join(" ") : booking.seats || "",
-      Number(booking.totalPrice) || 0,
-      booking.status || ""
+      price,
+      booking.status || "",
+      visualBar
     ]);
   });
 
@@ -870,7 +884,7 @@ function generateRevenueReport(bookings) {
   link.remove();
   URL.revokeObjectURL(link.href);
 
-  GT.toast("Revenue report downloaded.", "success");
+  GT.toast("Enhanced visual revenue report downloaded.", "success");
 }
 
 function editRoute(id, originCode, destCode, durationMins, basePrice) {

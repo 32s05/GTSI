@@ -11,8 +11,12 @@
 
 <div id="site-nav"></div>
 
-<section class="auth-section">
-  <div class="container auth-wrap">
+<section class="auth-section" style="position: relative; overflow: hidden; background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.18) 0%, transparent 32%), linear-gradient(135deg, #0b1e3d 0%, var(--navy-950) 60%, #08172d 100%);">
+  <!-- Glowing background blur circles -->
+  <div style="content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); filter: blur(30px); pointer-events: none; top: -90px; left: -90px;"></div>
+  <div style="content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); filter: blur(30px); pointer-events: none; right: -70px; bottom: -90px;"></div>
+
+  <div class="container auth-wrap" style="position: relative; z-index: 1;">
     <div class="auth-side">
       <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">Welcome back</span>
       <h1 style="color:#fff;">Pick up right where<br>you left your seat.</h1>

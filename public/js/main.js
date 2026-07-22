@@ -293,7 +293,7 @@ const GT = (() => {
             <a href="/signup.ejs">Sign up</a>
           </div>
         </div>
-        <div class="footer-bottom">© ${new Date().getFullYear()} Genesis Transport Service, Inc. — Prototype build for academic use.</div>
+        <div class="footer-bottom">© ${new Date().getFullYear()} Genesis Transport Service, Inc.</div>
       </footer>
     `;
   }

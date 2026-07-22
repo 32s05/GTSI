@@ -3,6 +3,7 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const express = require('express');
 const path = require('path');
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 3000;
 
@@ -82,7 +83,16 @@ app.post('/api/auth/signup', async (req, res) => {
             return res.status(400).json({ error: 'Email already registered.' });
         }
 
-        const user = await User.create({ name, email, password, contact });
+        // --- ADD THIS: Hash the password ---
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // --- UPDATE THIS: Use hashedPassword instead of password ---
+        const user = await User.create({ 
+            name, 
+            email, 
+            password: hashedPassword, 
+            contact 
+        });
 
         res.json({
             user: {
@@ -103,7 +113,9 @@ app.post('/api/auth/login', async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email: email.toLowerCase() });
 
-        if (!user || user.password !== password) {
+        const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+
+        if (!user || !isMatch) {
             return res.status(401).json({ error: 'Invalid email or password.' });
         }
 
@@ -424,7 +436,17 @@ app.post('/api/admin/users', requireAdmin, async (req, res) => {
         if (existing) {
             return res.status(400).json({ error: 'Email already registered.' });
         }
-        const user = await User.create({ name, email, password, contact, role: role || 'user' });
+
+        // --- ADD THIS: Hash the password ---
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await User.create({ 
+            name, 
+            email, 
+            password: hashedPassword, 
+            contact, 
+            role: role || 'user' 
+        });
         res.json({ user: { ...user.toObject(), password: undefined } });
     } catch (err) {
         res.status(500).json({ error: err.message });

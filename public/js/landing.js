@@ -30,9 +30,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     routesGrid.innerHTML = routes
       .slice(0, 6)
       .map(
-        (r) => `
+        (r, index) => `
       <a class="route-tile" href="booking.ejs?from=${r.originCode}&to=${r.destCode}">
-        <span class="badge badge-navy">${r.origin.region}</span>
+        <div class="route-tile-top">
+          <span class="badge badge-navy">${r.origin.region}</span>
+          <span class="route-pill">${index === 0 ? "Most booked" : "Direct route"}</span>
+        </div>
         <div class="route-line">
           <span class="stop"></span>
           <span class="track"></span>

@@ -112,8 +112,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateDestinationOptions();
     toSelect.value = params.get("to") || toSelect.options[0]?.value || terminals[1].code;
 
-    // Display all schedules on page load
-    await displayAllSchedules();
+    if (params.get("from") && params.get("to")) {
+      await runSearch();
+    } else {
+      // Display all schedules on page load
+      await displayAllSchedules();
+    }
   } catch (err) {
     GT.toast(err.message, "error");
   }

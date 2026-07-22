@@ -11,14 +11,16 @@
 
 <div id="site-nav"></div>
 
-<section class="auth-section">
-  <div class="container auth-wrap">
+<section class="auth-section" style="position: relative; overflow: hidden; background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.18) 0%, transparent 32%), linear-gradient(135deg, #0b1e3d 0%, var(--navy-950) 60%, #08172d 100%);">
+  <!-- Glowing background blur circles -->
+  <div style="content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); filter: blur(30px); pointer-events: none; top: -90px; left: -90px;"></div>
+  <div style="content: ''; position: absolute; width: 280px; height: 280px; border-radius: 50%; background: rgba(255, 255, 255, 0.08); filter: blur(30px); pointer-events: none; right: -70px; bottom: -90px;"></div>
+
+  <div class="container auth-wrap" style="position: relative; z-index: 1;">
     <div class="auth-side">
-      <span class="eyebrow" style="background:rgba(212,175,55,0.14);color:var(--gold-400);">Join Genesis</span>
       <h1 style="color:#fff;">Your seat, saved<br>before you arrive.</h1>
       <p style="color:#aeb9d4;">Create an account to book trips, save favorite routes, and keep every ticket in one place.</p>
       <ul style="margin-top:28px;display:flex;flex-direction:column;gap:14px;">
-        <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Free to book, pay only for your trip</li>
         <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Cancel anytime before departure</li>
         <li style="display:flex;gap:10px;align-items:center;color:#c7cfe2;font-size:0.9rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#D4AF37" stroke-width="2" stroke-linecap="round"/></svg> Track distance travelled over time</li>
       </ul>
@@ -26,7 +28,7 @@
 
     <div class="panel auth-panel">
       <h2>Create your account</h2>
-      <p class="muted mb-24">Already booking with us? <a href="login.ejsgit " style="color:var(--gold-600);font-weight:600;">Log in</a></p>
+      <p class="muted mb-24">Already booking with us? <a href="login.ejs" style="color:var(--gold-600);font-weight:600;">Log in</a></p>
 
       <form id="signup-form" novalidate>
         <div class="field" id="field-name">
@@ -49,10 +51,7 @@
             maxlength="11"
             pattern="09[0-9]{9}"
             oninput="
-              // Step 1: Strip out any letters or non-numbers
               let numbersOnly = this.value.replace(/[^0-9]/g, '');
-              
-              // Step 2: Force the field to always start with 09
               if (!numbersOnly.startsWith('09')) {
                 this.value = '09';
               } else {
@@ -60,7 +59,6 @@
               }
             "
             onkeydown="
-              // Step 3: Prevent the user from using Backspace/Delete to erase the '09'
               if ((this.selectionStart <= 2 && (event.key === 'Backspace' || event.key === 'Delete')) || 
                   (this.selectionStart < 2 && event.key.length === 1)) {
                 event.preventDefault();
