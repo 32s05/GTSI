@@ -160,7 +160,6 @@ const GT = (() => {
     }
     if (!mount) return;
 
-    // Reuse the page's existing mount point instead of creating a second navbar container.
     mount.innerHTML = "";
 
     const resolvedActivePage = resolveActivePage(activePage);
@@ -273,9 +272,9 @@ const GT = (() => {
               <span class="brand-mark">
                 <img src="/css/genesis-logo.png" alt="Genesis Logo" style="height: 100%; width: auto; object-fit: contain;" />
               </span>
-              Genesis Transport
+              Genesis Transport Service, Inc.
             </div>  
-            <p style="color:#8b96b5;">Peer-to-peer intercity bus booking for the Filipino commuter — built as a DLSU-D capstone project.</p>
+            <p style="color:#8b96b5;">One of the biggest bus companies in Luzon, an efficient and dependable multi-route transport operator currently connecting Metro Manila to Central and Northern Luzon. </p>
           </div>
           <div>
             <h4>Product</h4>

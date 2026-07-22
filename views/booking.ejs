@@ -60,6 +60,21 @@
 
     <div class="results-list">
       <div id="results-summary" class="results-summary"></div>
+      <div class="results-toolbar">
+        <label for="rows-per-page">Rows per page
+          <select id="rows-per-page">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        <div class="pagination-controls" id="booking-pagination-controls">
+          <button type="button" id="prev-page" class="btn btn-ghost btn-sm">‹</button>
+          <span id="page-info">Page 1 of 1</span>
+          <button type="button" id="next-page" class="btn btn-ghost btn-sm">›</button>
+        </div>
+      </div>
       <div id="results-container"></div>
     </div>
   </div>

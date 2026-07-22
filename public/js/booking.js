@@ -22,6 +22,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentRoute = null;
   let currentTrips = [];
   let activeTypeFilters = new Set();
+  let currentPage = 1;
+  let rowsPerPage = 25;
+  const pageSizes = [10, 25, 50, 100];
+
+  const rowsPerPageSelect = document.getElementById("rows-per-page");
+  const prevPageButton = document.getElementById("prev-page");
+  const nextPageButton = document.getElementById("next-page");
+  const pageInfo = document.getElementById("page-info");
 
   // Fetch routes to filter destinations
   async function fetchRoutes() {
@@ -54,13 +62,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Display all available schedules
+  // Display all active schedules on first load
   async function displayAllSchedules() {
     try {
-      const today = new Date().toISOString().slice(0, 10);
-      const { route, trips: allTrips } = await GT.api(`/api/trips/search?from=${fromSelect.value}&to=${toSelect.value}&date=${today}`);
-      currentRoute = route;
+      const { trips: allTrips } = await GT.api("/api/trips/active");
+      currentRoute = null;
       currentTrips = allTrips || [];
+      currentPage = 1;
       activeTypeFilters = new Set(currentTrips.map((t) => t.busType));
       renderFilters();
       renderResults();
@@ -113,11 +121,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Filter destinations when origin changes
   fromSelect.addEventListener("change", () => {
     updateDestinationOptions();
-    displayAllSchedules();
+    runSearch();
   });
 
   toSelect.addEventListener("change", () => {
-    displayAllSchedules();
+    runSearch();
   });
 
   document.getElementById("swap").addEventListener("click", () => {
@@ -125,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     fromSelect.value = toSelect.value;
     toSelect.value = tmp;
     updateDestinationOptions();
-    displayAllSchedules();
+    runSearch();
   });
 
   document.getElementById("search-form").addEventListener("submit", (e) => {
@@ -138,8 +146,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   sortSelect.addEventListener("change", renderResults);
+  if (rowsPerPageSelect) {
+    rowsPerPageSelect.addEventListener("change", () => {
+      rowsPerPage = Number(rowsPerPageSelect.value) || 25;
+      currentPage = 1;
+      renderResults();
+    });
+  }
+  if (prevPageButton) {
+    prevPageButton.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage -= 1;
+        renderResults();
+      }
+    });
+  }
+  if (nextPageButton) {
+    nextPageButton.addEventListener("click", () => {
+      currentPage += 1;
+      renderResults();
+    });
+  }
 
   async function runSearch() {
+    currentPage = 1;
     resultsContainer.innerHTML = `<div class="empty-state">Searching for trips…</div>`;
     try {
       const data = await GT.api(
@@ -176,16 +206,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
+  function updatePaginationControls(totalItems) {
+    const pageCount = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+    if (currentPage > pageCount) currentPage = pageCount;
+    if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${pageCount}`;
+    if (prevPageButton) prevPageButton.disabled = currentPage <= 1;
+    if (nextPageButton) nextPageButton.disabled = currentPage >= pageCount;
+    const controls = document.getElementById("booking-pagination-controls");
+    if (controls) {
+      controls.classList.toggle("hidden", totalItems === 0);
+    }
+    return pageCount;
+  }
+
+  function getPagedTrips(trips) {
+    const totalItems = trips.length;
+    const pageCount = updatePaginationControls(totalItems);
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return trips.slice(start, end);
+  }
+
   function renderResults() {
-    if (!currentRoute) {
+    if (!currentRoute && !currentTrips.length) {
       resultsSummary.innerHTML = "";
       resultsContainer.innerHTML = `
         <div class="empty-state">
           <div class="icon">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 17V9a2 2 0 012-2h12a2 2 0 012 2v8M4 17h16" stroke="currentColor" stroke-width="1.5"/></svg>
           </div>
-          <h3>No direct route yet</h3>
-          <p>We don't have a direct schedule between these terminals in this prototype. Try Dasmariñas → Alabang or Cubao → Baguio.</p>
+          <h3>No active schedules yet</h3>
+          <p>There are no active schedules available right now.</p>
         </div>`;
       return;
     }
@@ -201,7 +252,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       return a.departure.localeCompare(b.departure);
     });
 
-    resultsSummary.innerHTML = `<strong>${trips.length} trip${trips.length === 1 ? "" : "s"}</strong> from ${currentRoute.origin.name} to ${currentRoute.destination.name} · ${GT.formatDateLong(dateInput.value)}`;
+    const summaryText = currentRoute
+      ? `<strong>${trips.length} trip${trips.length === 1 ? "" : "s"}</strong> from ${currentRoute.origin.name} to ${currentRoute.destination.name} · ${GT.formatDateLong(dateInput.value)}`
+      : `<strong>${trips.length} active schedule${trips.length === 1 ? "" : "s"}</strong> across all available routes`;
+    resultsSummary.innerHTML = summaryText;
+    const pagedTrips = getPagedTrips(trips);
 
     if (!trips.length) {
       // Show no results message with alternative trips
@@ -288,16 +343,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    resultsContainer.innerHTML = trips
+    resultsContainer.innerHTML = pagedTrips
       .map((trip) => {
         const seatsLow = trip.seatsAvailable <= 6;
+        const routeOrigin = currentRoute?.origin?.name || trip.route?.origin?.name || "Route origin";
+        const routeDestination = currentRoute?.destination?.name || trip.route?.destination?.name || "Route destination";
         return `
       <div class="trip-card">
         <div>
           <div class="trip-times">
             <div>
               <div class="time">${trip.departure}</div>
-              <div class="place">${currentRoute.origin.name}</div>
+              <div class="place">${routeOrigin}</div>
             </div>
             <div class="mid">
               <div class="dur">${GT.formatDurationMins(trip.durationMins)}</div>
@@ -305,7 +362,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
             <div>
               <div class="time">${trip.arrival}</div>
-              <div class="place">${currentRoute.destination.name}</div>
+              <div class="place">${routeDestination}</div>
             </div>
           </div>
           <div class="trip-meta">
@@ -327,7 +384,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.addEventListener("click", () => {
         const trip = trips.find((t) => t.id === btn.dataset.tripId);
         GT.setDraft({
-          route: currentRoute,
+          route: currentRoute || trip.route,
           trip,
           date: dateInput.value,
           passengers,

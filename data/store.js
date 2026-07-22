@@ -3,11 +3,21 @@
 
 const BUS_TYPES = [
   { type: "Economy", multiplier: 1, perks: ["Aircon", "Reclining seat"] },
-  { type: "Deluxe", multiplier: 1.35, perks: ["Aircon", "Extra legroom", "USB charging"] },
-  { type: "Premium", multiplier: 1.75, perks: ["Aircon", "Wide leather seat", "USB charging", "Onboard wifi"] },
+  { type: "Premium", multiplier: 1.15, perks: ["Aircon", "Wide leather seat", "USB charging", "Onboard wifi"] },
+  { type: "Deluxe", multiplier: 1.3, perks: ["Aircon", "Extra legroom", "USB charging"] },
 ];
 
 const DEPARTURE_HOURS = [5, 6, 7, 8, 9, 10, 12, 13, 15, 17, 19, 21];
+
+function getBusTypeMultiplier(busType) {
+  const normalized = String(busType || "").trim().toLowerCase();
+  const match = BUS_TYPES.find((entry) => entry.type.toLowerCase() === normalized);
+  return match ? match.multiplier : 1;
+}
+
+function calculateTripPrice(basePrice, busType) {
+  return Math.round(Number(basePrice || 0) * getBusTypeMultiplier(busType));
+}
 
 function buildTripsForRoute(route, dateStr) {
   if (!route) return [];
@@ -16,7 +26,7 @@ function buildTripsForRoute(route, dateStr) {
   return DEPARTURE_HOURS.map((hour, i) => {
     const bus = BUS_TYPES[(i + daySeed) % BUS_TYPES.length];
     const seed = daySeed * 1000 + hour + route.id.length;
-    const price = Math.round(route.basePrice * bus.multiplier);
+    const price = calculateTripPrice(route.basePrice, bus.type);
     const plate = `GTI-${String(1000 + ((seed * 7) % 8999)).slice(0, 4)}`;
     return {
       id: `${route.id}-${dateStr || "any"}-${hour}`,
@@ -44,4 +54,6 @@ function addMinutes(startHour, mins) {
 module.exports = {
   BUS_TYPES,
   buildTripsForRoute,
+  getBusTypeMultiplier,
+  calculateTripPrice,
 };

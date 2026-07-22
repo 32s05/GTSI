@@ -154,6 +154,66 @@ app.get('/api/routes', async (req, res) => {
 });
 
 // --- TRIP SEARCH & SEATS ---
+app.get('/api/trips/active', async (req, res) => {
+    try {
+        const schedules = await Schedule.find({ status: { $ne: 'cancelled' } }).sort({ date: 1, departureTime: 1 });
+        const routes = await Route.find({});
+        const terminals = await Terminal.find({});
+        const terminalMap = {};
+        terminals.forEach(t => { terminalMap[t.code] = t; });
+        const routeMap = {};
+        routes.forEach(r => { routeMap[r.id] = r; });
+
+        const liveTrips = await Promise.all(schedules.map(async (sched) => {
+            const activeRoute = routeMap[sched.routeId];
+            if (!activeRoute) return null;
+
+            const tripBookings = await Booking.find({
+                tripId: sched.id,
+                status: { $ne: 'cancelled' }
+            });
+
+            let totalBookedSeats = 0;
+            tripBookings.forEach(b => {
+                if (b.seats && Array.isArray(b.seats)) {
+                    totalBookedSeats += b.seats.length;
+                }
+            });
+
+            return {
+                id: sched.id,
+                routeId: sched.routeId,
+                departure: sched.departureTime,
+                departureTime: sched.departureTime,
+                arrival: sched.arrivalTime,
+                durationMins: sched.durationMins,
+                busType: sched.busType,
+                plate: sched.plateNumber,
+                plateNumber: sched.plateNumber,
+                price: DB.calculateTripPrice(activeRoute.basePrice, sched.busType),
+                totalSeats: sched.totalSeats,
+                status: sched.status,
+                date: sched.date,
+                seatsBooked: totalBookedSeats,
+                seatsAvailable: Math.max(0, sched.totalSeats - totalBookedSeats),
+                route: {
+                    id: activeRoute.id,
+                    originCode: activeRoute.originCode,
+                    destCode: activeRoute.destCode,
+                    durationMins: activeRoute.durationMins,
+                    basePrice: activeRoute.basePrice,
+                    origin: terminalMap[activeRoute.originCode] || null,
+                    destination: terminalMap[activeRoute.destCode] || null
+                }
+            };
+        }));
+
+        res.json({ trips: liveTrips.filter(Boolean) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/trips/search', async (req, res) => {
     try {
         const { from, to, date } = req.query;
@@ -200,7 +260,7 @@ app.get('/api/trips/search', async (req, res) => {
                 busType: sched.busType,
                 plate: sched.plateNumber,
                 plateNumber: sched.plateNumber,
-                price: activeRoute.basePrice,
+                price: DB.calculateTripPrice(activeRoute.basePrice, sched.busType),
                 totalSeats: sched.totalSeats,
                 status: sched.status,
                 seatsBooked: totalBookedSeats,

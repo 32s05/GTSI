@@ -35,38 +35,10 @@ async function loadSchedulesOnly(user) {
       scheduleSelect.innerHTML = routes.map((route) => `<option value="${route.id}">${route.id} — ${route.originCode} → ${route.destCode}</option>`).join("");
     }
 
-    const table = document.getElementById("schedules-table-body");
-    table.innerHTML = schedules.map((schedule) => {
-      const routeLabel = routeMap[schedule.routeId] ? `${routeMap[schedule.routeId].originCode} → ${routeMap[schedule.routeId].destCode}` : schedule.routeId;
-      const searchText = `${routeLabel} ${schedule.date} ${schedule.departureTime} ${schedule.plateNumber || ''}`.toLowerCase();
-      return `
-        <tr class="schedule-row" data-search="${searchText}">
-          <td><strong>${routeLabel}</strong></td>
-          <td>${schedule.date}</td>
-          <td>${schedule.departureTime}</td>
-          <td>${schedule.plateNumber || "—"}</td>
-          <td><span class="badge ${schedule.status === 'cancelled' ? 'badge-danger' : schedule.status === 'delayed' ? 'badge-gold' : 'badge-success'}">${schedule.status}</span></td>
-          <td>
-            <div style="display: flex; gap: 0.6rem; align-items: center;">
-              <button class="btn btn-ghost btn-sm" title="View Details" onclick="viewScheduleDetails('${schedule.id}', '${routeLabel}', '${schedule.date}', '${schedule.departureTime}', '${schedule.arrivalTime || ''}', '${schedule.busType || 'Economy'}', '${schedule.plateNumber || ''}', ${schedule.totalSeats}, '${schedule.status}')" style="padding: 0.4rem 0.6rem;">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button class="btn btn-ghost btn-sm" title="Edit" onclick="editSchedule('${schedule.id}', '${schedule.routeId}', '${schedule.departureTime}', '${schedule.durationMins || 120}', '${schedule.busType || 'Economy'}', '${schedule.plateNumber || ''}', '${schedule.date}', ${schedule.totalSeats}, '${schedule.status}')" style="padding: 0.4rem 0.6rem;">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="btn btn-danger-ghost btn-sm" title="Delete" onclick="deleteSchedule('${schedule.id}')" style="padding: 0.4rem 0.6rem;">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join("");
-
-    // Setup search functionality
-    setupScheduleSearch();
+    return { schedules, routeMap };
   } catch (err) {
     GT.toast("Failed to load schedules: " + err.message, "error");
+    return { schedules: [], routeMap: {} };
   }
 }
 
@@ -123,8 +95,73 @@ async function setupSchedulesPage(user) {
   const closeDetailsBtn = document.getElementById("close-details-modal-btn");
   const routeSelect = document.getElementById("schedule-route");
   const durationInput = document.getElementById("schedule-duration");
+  const scheduleSearchInput = document.getElementById("schedule-search-input");
+  const scheduleRowsPerPageSelect = document.getElementById("schedule-rows-per-page");
+  const schedulePrevPageButton = document.getElementById("schedule-prev-page");
+  const scheduleNextPageButton = document.getElementById("schedule-next-page");
+  const schedulePageInfo = document.getElementById("schedule-page-info");
 
   let routes = [];
+  let allSchedules = [];
+  let routeMap = {};
+  let currentSchedulePage = 1;
+  let scheduleRowsPerPage = Number(scheduleRowsPerPageSelect?.value) || 25;
+
+  function updateTablePaginationControls(totalItems) {
+    const pageCount = Math.max(1, Math.ceil(totalItems / scheduleRowsPerPage));
+    if (currentSchedulePage > pageCount) currentSchedulePage = pageCount;
+    if (schedulePageInfo) schedulePageInfo.textContent = `Page ${currentSchedulePage} of ${pageCount}`;
+    if (schedulePrevPageButton) schedulePrevPageButton.disabled = currentSchedulePage <= 1;
+    if (scheduleNextPageButton) scheduleNextPageButton.disabled = currentSchedulePage >= pageCount;
+    const controls = document.getElementById("schedule-pagination-controls");
+    if (controls) {
+      controls.classList.toggle("hidden", totalItems === 0);
+    }
+    return pageCount;
+  }
+
+  function renderScheduleTable() {
+    const searchTerm = scheduleSearchInput?.value.trim().toLowerCase() || "";
+    const filteredSchedules = allSchedules.filter((schedule) => {
+      const routeLabel = routeMap[schedule.routeId] ? `${routeMap[schedule.routeId].originCode} → ${routeMap[schedule.routeId].destCode}` : schedule.routeId;
+      const searchText = `${routeLabel} ${schedule.date} ${schedule.departureTime} ${schedule.plateNumber || ''}`.toLowerCase();
+      return searchText.includes(searchTerm);
+    });
+
+    const totalItems = filteredSchedules.length;
+    const pageCount = updateTablePaginationControls(totalItems);
+    const start = (currentSchedulePage - 1) * scheduleRowsPerPage;
+    const end = start + scheduleRowsPerPage;
+    const pageItems = filteredSchedules.slice(start, end);
+
+    const table = document.getElementById("schedules-table-body");
+    table.innerHTML = pageItems.map((schedule) => {
+      const routeLabel = routeMap[schedule.routeId] ? `${routeMap[schedule.routeId].originCode} → ${routeMap[schedule.routeId].destCode}` : schedule.routeId;
+      const searchText = `${routeLabel} ${schedule.date} ${schedule.departureTime} ${schedule.plateNumber || ''}`.toLowerCase();
+      return `
+        <tr class="schedule-row" data-search="${searchText}">
+          <td><strong>${routeLabel}</strong></td>
+          <td>${schedule.date}</td>
+          <td>${schedule.departureTime}</td>
+          <td>${schedule.plateNumber || "—"}</td>
+          <td><span class="badge ${schedule.status === 'cancelled' ? 'badge-danger' : schedule.status === 'delayed' ? 'badge-gold' : 'badge-success'}">${schedule.status}</span></td>
+          <td>
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+              <button class="btn btn-ghost btn-sm" title="View Details" onclick="viewScheduleDetails('${schedule.id}', '${routeLabel}', '${schedule.date}', '${schedule.departureTime}', '${schedule.arrivalTime || ''}', '${schedule.busType || 'Economy'}', '${schedule.plateNumber || ''}', ${schedule.totalSeats}, '${schedule.status}')" style="padding: 0.4rem 0.6rem;">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-ghost btn-sm" title="Edit" onclick="editSchedule('${schedule.id}', '${schedule.routeId}', '${schedule.departureTime}', '${schedule.durationMins || 120}', '${schedule.busType || 'Economy'}', '${schedule.plateNumber || ''}', '${schedule.date}', ${schedule.totalSeats}, '${schedule.status}')" style="padding: 0.4rem 0.6rem;">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-danger-ghost btn-sm" title="Delete" onclick="deleteSchedule('${schedule.id}')" style="padding: 0.4rem 0.6rem;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
 
   // Fetch routes to get duration when route is selected
   async function fetchRoutes() {
@@ -145,6 +182,37 @@ async function setupSchedulesPage(user) {
       updateCalculatedArrival();
     }
   });
+
+  if (scheduleRowsPerPageSelect) {
+    scheduleRowsPerPageSelect.addEventListener("change", () => {
+      scheduleRowsPerPage = Number(scheduleRowsPerPageSelect.value) || 25;
+      currentSchedulePage = 1;
+      renderScheduleTable();
+    });
+  }
+
+  if (schedulePrevPageButton) {
+    schedulePrevPageButton.addEventListener("click", () => {
+      if (currentSchedulePage > 1) {
+        currentSchedulePage -= 1;
+        renderScheduleTable();
+      }
+    });
+  }
+
+  if (scheduleNextPageButton) {
+    scheduleNextPageButton.addEventListener("click", () => {
+      currentSchedulePage += 1;
+      renderScheduleTable();
+    });
+  }
+
+  if (scheduleSearchInput) {
+    scheduleSearchInput.addEventListener("input", () => {
+      currentSchedulePage = 1;
+      renderScheduleTable();
+    });
+  }
 
   populateScheduleBusTypeOptions();
   await fetchRoutes();
@@ -198,13 +266,20 @@ async function setupSchedulesPage(user) {
       GT.toast(editId ? "Schedule updated successfully." : "Schedule added successfully!", "success");
       modal.classList.add("hide");
       form.reset();
-      await loadSchedulesOnly(user);
+      const loaded = await loadSchedulesOnly(user);
+      allSchedules = loaded.schedules;
+      routeMap = loaded.routeMap;
+      currentSchedulePage = 1;
+      renderScheduleTable();
     } catch (err) {
       GT.toast(err.message, "error");
     }
   });
 
-  await loadSchedulesOnly(user);
+  const loaded = await loadSchedulesOnly(user);
+  allSchedules = loaded.schedules;
+  routeMap = loaded.routeMap;
+  renderScheduleTable();
 }
 
 function setupScheduleSearch() {
@@ -300,11 +375,11 @@ async function setupRoutePage(user) {
     }
   }
 
-  // Calculate base price based on duration (e.g., ₱2 per minute)
+  // Calculate base price based on duration
   function calculateBasePrice() {
     const duration = Number(durationInput.value);
     if (duration > 0) {
-      const price = Math.ceil(duration * 2); // ₱2 per minute
+      const price = Math.ceil(duration * 3.5);
       basePriceInput.value = price;
     }
   }

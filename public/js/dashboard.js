@@ -311,63 +311,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Make the dashboard header (stats + tabs) stick below the navbar and hero like the page hero does.
-  function setupDashHeaderSticky() {
-    const dashHeader = document.querySelector('.dash-header');
-    if (!dashHeader) return;
-
-    // spacer keeps layout from jumping when header becomes fixed
-    let spacer = document.querySelector('.dash-header-spacer');
-    if (!spacer) {
-      spacer = document.createElement('div');
-      spacer.className = 'dash-header-spacer';
-      dashHeader.parentNode.insertBefore(spacer, dashHeader.nextSibling);
-    }
-
-    function apply() {
-      const navbar = document.querySelector('.navbar');
-      const hero = document.querySelector('.page-hero');
-      const navbarH = navbar ? navbar.offsetHeight : 76;
-      const heroH = hero ? hero.offsetHeight : 0;
-      const top = navbarH + heroH;
-
-      // on desktop use fixed positioning so header is static (doesn't move)
-      if (window.innerWidth > 900) {
-        const headerRect = dashHeader.getBoundingClientRect();
-        const container = dashHeader.parentElement;
-        const containerRect = container.getBoundingClientRect();
-
-        dashHeader.classList.add('fixed');
-        dashHeader.classList.add('fixed-applied');
-        dashHeader.style.position = 'fixed';
-        dashHeader.style.top = top + 'px';
-        dashHeader.style.left = containerRect.left + 'px';
-        dashHeader.style.width = containerRect.width + 'px';
-        dashHeader.style.zIndex = 860;
-
-        // spacer should match header height so content doesn't jump
-        const headerH = dashHeader.offsetHeight;
-        spacer.style.height = headerH + 'px';
-      } else {
-        dashHeader.classList.remove('fixed');
-        dashHeader.classList.remove('fixed-applied');
-        dashHeader.style.position = '';
-        dashHeader.style.top = '';
-        dashHeader.style.left = '';
-        dashHeader.style.width = '';
-        dashHeader.style.zIndex = '';
-        spacer.style.height = '0px';
-      }
-    }
-
-    apply();
-    let t;
-    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(apply, 120); });
-    window.addEventListener('load', apply);
-  }
-
-  setupDashHeaderSticky();
-
   function iconTicket() {
     return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 8a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2a2 2 0 000-4V8z" stroke="#0B1E3D" stroke-width="1.5"/></svg>`;
   }
